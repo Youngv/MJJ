@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Nodeseek Pro All-in-One</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 310px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #141720;
+      color: #e5e7eb;
+      padding: 14px;
+      user-select: none;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .brand img {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: linear-gradient(135deg, #1076ff, #6366f1);
+      color: #fff;
+      font-weight: 600;
+    }
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .menu-btn {
+      width: 100%;
+      text-align: left;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f3f4f6;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .menu-btn:hover {
+      background: rgba(16, 118, 255, 0.18);
+      border-color: rgba(16, 118, 255, 0.45);
+      transform: translateY(-1px);
+    }
+    .menu-btn:active {
+      transform: translateY(0);
+    }
+    .empty {
+      padding: 16px 10px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .quick-links {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .quick-link {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(96, 165, 250, 0.25);
+    }
+    .quick-link:hover {
+      background: rgba(96, 165, 250, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="icons/icon48.png" alt="NS">
+      <span class="brand-title">Nodeseek Pro</span>
+    </div>
+    <span class="badge">v1.1.0</span>
+  </div>
+  <div id="menu-container" class="menu-list">
+    <div class="empty">正在连接当前页面...</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

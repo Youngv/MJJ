@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "Nodeseek Pro All-in-One",
+  "version": "1.1.0",
+  "description": "NodeSeek / DeepFlood 全能增强插件：集成 Nodeseek Pro、低等级发帖模糊屏蔽、用户 AI 画像与深度交易分析、私信本地缓存与 WebDAV/R2 备份。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Nodeseek Pro All-in-One",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "notifications",
+    "clipboardWrite",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.nodeseek.com/*",
+        "*://www.deepflood.com/*"
+      ],
+      "js": [
+        "content-bridge.js"
+      ],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "*://www.nodeseek.com/*",
+        "*://www.deepflood.com/*"
+      ],
+      "js": [
+        "gm-shim-main.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://www.nodeseek.com/*",
+        "*://www.deepflood.com/*"
+      ],
+      "js": [
+        "vendor/layui.min.js",
+        "vendor/html2canvas.min.js",
+        "content-main.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "vendor/*",
+        "icons/*"
+      ],
+      "matches": [
+        "*://www.nodeseek.com/*",
+        "*://www.deepflood.com/*"
+      ]
+    }
+  ]
+}
