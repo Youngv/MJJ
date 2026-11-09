@@ -1,4 +1,4 @@
-// MJJ - Extension Main Content Script (v1.4.1)
+// MJJ - Extension Main Content Script (v1.4.2)
 (async function() {
   const gm = window.__NSX_GM__;
   if (gm && gm.ready) {
@@ -5976,7 +5976,7 @@ html.dark-layout #mjj-cc-overlay {
 </svg>`;
 
     // ===== 基础 CSS =====
-    const BASE_CSS = `.blocked-post{display:none!important}.nsx-post-folded>*:not(.nsx-fold-notice){display:none!important}.nsx-post-folded{background:transparent!important;background-color:transparent!important;padding:0!important;min-height:0!important;border-bottom:1px dashed rgba(148,163,184,.18)!important}.nsx-fold-notice{width:100%;box-sizing:border-box;padding:4px 12px!important;font-size:12px;line-height:1.4;color:#94a3b8!important;opacity:.7;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:opacity .15s ease,background-color .15s ease}.nsx-fold-notice:hover{opacity:.95;background-color:rgba(148,163,184,.05)}.nsx-fold-notice b{font-weight:500;color:#64748b}body.dark-layout .nsx-fold-notice b,html.dark-layout .nsx-fold-notice b{color:#cbd5e1}.nsx-unfold-btn{font-size:11px;color:#94a3b8!important;padding:1px 7px;border-radius:4px;border:1px solid rgba(148,163,184,.25);text-decoration:none!important;cursor:pointer;flex-shrink:0;transition:all .15s ease}.nsx-unfold-btn:hover{color:#64748b!important;border-color:rgba(148,163,184,.5);background:rgba(148,163,184,.1)}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
+    const BASE_CSS = `.blocked-post{display:none!important}.layui-layer-tips:has(.nsx-rep-card),.layui-layer-tips .layui-layer-content:has(.nsx-rep-card){background:transparent!important;background-color:transparent!important;box-shadow:none!important;border:none!important;padding:0!important}.layui-layer-tips:has(.nsx-rep-card) .layui-layer-TipsG{display:none!important}.nsx-post-folded>*:not(.nsx-fold-notice){display:none!important}.nsx-post-folded{background:transparent!important;background-color:transparent!important;padding:0!important;min-height:0!important;border-bottom:1px dashed rgba(148,163,184,.18)!important}.nsx-fold-notice{width:100%;box-sizing:border-box;padding:4px 12px!important;font-size:12px;line-height:1.4;color:#94a3b8!important;opacity:.7;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:opacity .15s ease,background-color .15s ease}.nsx-fold-notice:hover{opacity:.95;background-color:rgba(148,163,184,.05)}.nsx-fold-notice b{font-weight:500;color:#64748b}body.dark-layout .nsx-fold-notice b,html.dark-layout .nsx-fold-notice b{color:#cbd5e1}.nsx-unfold-btn{font-size:11px;color:#94a3b8!important;padding:1px 7px;border-radius:4px;border:1px solid rgba(148,163,184,.25);text-decoration:none!important;cursor:pointer;flex-shrink:0;transition:all .15s ease}.nsx-unfold-btn:hover{color:#64748b!important;border-color:rgba(148,163,184,.5);background:rgba(148,163,184,.1)}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
 
     const applyRuntimeSettings = (ctx, changedKeys = []) => {
         const changed = new Set(changedKeys || []);
@@ -6663,7 +6663,7 @@ html.dark-layout #mjj-cc-overlay {
 
                             const infoSpanDiv = document.createElement('span');
                             infoSpanDiv.className = 'nsx-user-info-display';
-                            infoSpanDiv.style.cssText = `display:inline-flex;align-items:center;opacity:0.95;user-select:text;margin-left:4px;cursor:help;`;
+                            infoSpanDiv.style.cssText = `display:inline-flex;align-items:center;opacity:0.95;user-select:text;margin-left:6px;vertical-align:middle;cursor:help;`;
 
                             let lvGradient = "linear-gradient(135deg, #e53935, #b71c1c)"; // Lv1: 红色 (用户要求)
                             let lvColor = "#e53935";
@@ -6671,61 +6671,62 @@ html.dark-layout #mjj-cc-overlay {
                             else if (Number(rank) === 3) { lvGradient = "linear-gradient(135deg, #12eb92, #0ba360)"; lvColor = "#11c87d"; } // Lv3: 翡翠绿
                             else if (Number(rank) === 4) { lvGradient = "linear-gradient(135deg, #47abff, #1860ff)"; lvColor = "#2d86ff"; } // Lv4: 海洋蓝
                             else if (Number(rank) === 5) { lvGradient = "linear-gradient(135deg, #ffd700, #ff8c00)"; lvColor = "#ffb300"; } // Lv5: 暖金/黄金色
-                            else if (Number(rank) >= 6) { lvGradient = "linear-gradient(135deg, #db24ff, #2524ff)"; lvColor = "#6f58ff"; } // Lv6: 赛博双拼
-
+                            else if (Number(rank) >= 6) { lvGradient = "linear-gradient(135deg, #a855f7, #4f46e5)"; lvColor = "#6f58ff"; } // Lv6: 紫蓝渐变
 
                             const lvSpan = document.createElement('span');
-                            lvSpan.className = `nsk-badge role-tag nsx-lv-badge`;
+                            lvSpan.className = `nsx-lv-badge`;
                             const simpleLvColor = simpleLvColorCfg || lvColor;
                             lvSpan.style.cssText = simpleLvStyle
-                                ? `font-size:11px;padding:2px 7px;border-radius:4px;background:transparent;border:1px solid ${simpleLvColor};color:${simpleLvColor}!important;vertical-align:middle;text-shadow:none;`
-                                : `font-size:11px;padding:2px 7px;border-radius:4px;background:${lvGradient};color:#fff!important;vertical-align:middle;text-shadow:0 1px 1px rgba(0,0,0,0.3);`;
-                            lvSpan.innerHTML = `Lv ${rank} | ${joinDays}天`;
+                                ? `display:inline-flex;align-items:center;height:19px;line-height:19px;font-size:10.5px;font-weight:600;padding:0 6px;border-radius:4px;background:transparent;border:1px solid ${simpleLvColor};color:${simpleLvColor}!important;vertical-align:middle;box-sizing:border-box;white-space:nowrap;`
+                                : `display:inline-flex;align-items:center;height:19px;line-height:19px;font-size:10.5px;font-weight:600;padding:0 6px;border-radius:4px;border:none;background:${lvGradient};color:#fff!important;vertical-align:middle;box-sizing:border-box;white-space:nowrap;`;
+                            lvSpan.innerHTML = `Lv ${rank} <span style="opacity:0.65;margin:0 3px;">|</span> ${joinDays}天`;
                             infoSpanDiv.appendChild(lvSpan);
 
                             let hoverTimer;
                             infoSpanDiv.onmouseenter = () => {
                                 clearTimeout(hoverTimer);
                                 // 动态适配主题色（每次悬浮时重新检测）
-                                // 修正：NodeSeek 的深色模式类通常在 body 上
                                 const currentIsDark = document.body.classList.contains('dark-layout') || document.documentElement.classList.contains('dark');
-                                const tipBg = currentIsDark ? '#2a2a2a' : '#fff';
-                                const tipColor = currentIsDark ? '#e0e0e0' : '#1f1f1f';
-                                const tipBorder = currentIsDark ? '#444' : '#e4e4e4';
-                                const tipDiv = currentIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+                                const tipBg = currentIsDark ? '#1e293b' : '#ffffff';
+                                const tipColor = currentIsDark ? '#e2e8f0' : '#334155';
+                                const tipSub = currentIsDark ? '#94a3b8' : '#64748b';
+                                const tipBorder = currentIsDark ? '#334155' : '#e2e8f0';
+                                const tipDiv = currentIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.07)';
+                                const pillBg = currentIsDark ? 'rgba(56,189,248,0.15)' : 'rgba(14,165,233,0.1)';
+                                const pillColor = currentIsDark ? '#38bdf8' : '#0284c7';
 
                                 const hoverContent = `
-                                    <div style="padding:10px;min-width:180px;color:${tipColor};background:${tipBg};border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15); border:1px solid ${tipBorder};">
-                                        <div style="font-weight:bold;margin-bottom:8px;border-bottom:1px solid ${tipDiv};padding-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
-                                            <span style="font-size:14px;">${username}</span>
-                                            <span style="background:${lvGradient};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;font-weight:900;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));">Lv ${rank}</span>
+                                    <div class="nsx-rep-card" style="padding:8px 11px;min-width:154px;color:${tipColor};background:${tipBg};border-radius:9px;box-shadow:0 8px 24px rgba(15,23,42,0.14);border:1px solid ${tipBorder};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.4;">
+                                        <div style="margin-bottom:5px;border-bottom:1px solid ${tipDiv};padding-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                                            <span style="font-size:12.5px;font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${username}</span>
+                                            <span style="background:${lvGradient};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:12px;font-weight:800;">Lv.${rank}</span>
                                         </div>
-                                        <div style="text-align:center;margin-bottom:6px;font-size:13px;">注册 <span class="layui-badge layui-bg-blue" style="height:18px;line-height:18px;">${joinDays}</span> 天</div>
-                                        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:4px 12px;align-items:center;font-size:12px;">
-                                            <div style="text-align:right;">主题 <a href="/space/${userId}#/discussions" target="_blank" style="font-weight:bold;color:#4fc3f7;text-decoration:underline;">${userData.nPost || 0}</a></div>
-                                            <div style="color:${tipDiv};font-size:11px;user-select:none;">|</div>
-                                            <div style="text-align:left;">评论 <a href="/space/${userId}#/comments" target="_blank" style="font-weight:bold;color:#4fc3f7;text-decoration:underline;">${userData.nComment || 0}</a></div>
+                                        <div style="text-align:center;margin-bottom:5px;font-size:11px;color:${tipSub};">注册 <span style="display:inline-block;padding:0 5px;height:16px;line-height:16px;border-radius:4px;background:${pillBg};color:${pillColor};font-weight:700;font-size:11px;">${joinDays}</span> 天</div>
+                                        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:3px 8px;align-items:center;font-size:11px;">
+                                            <div style="text-align:right;color:${tipSub};">主题 <a href="/space/${userId}#/discussions" target="_blank" style="font-weight:700;color:#0ea5e9;text-decoration:none;">${userData.nPost || 0}</a></div>
+                                            <div style="color:${tipDiv};font-size:10px;user-select:none;">|</div>
+                                            <div style="text-align:left;color:${tipSub};">评论 <a href="/space/${userId}#/comments" target="_blank" style="font-weight:700;color:#0ea5e9;text-decoration:none;">${userData.nComment || 0}</a></div>
 
-                                            <div style="text-align:right;">鸡腿 <b style="color:#ffb300;">${userData.coin || 0}</b></div>
-                                            <div style="color:${tipDiv};font-size:11px;user-select:none;">|</div>
-                                            <div style="text-align:left;">星尘 <b style="color:#e040fb;">${userData.stardust || 0}</b></div>
+                                            <div style="text-align:right;color:${tipSub};">鸡腿 <b style="color:#f59e0b;font-weight:700;">${userData.coin || 0}</b></div>
+                                            <div style="color:${tipDiv};font-size:10px;user-select:none;">|</div>
+                                            <div style="text-align:left;color:${tipSub};">星尘 <b style="color:#d946ef;font-weight:700;">${userData.stardust || 0}</b></div>
 
-                                            <div style="text-align:right;">评分 <b style="background:${trustColor};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:bold;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3));">${trustScore}</b>/100</div>
-                                            <div style="color:${tipDiv};font-size:11px;user-select:none;">|</div>
-                                            <div style="text-align:left;">诊断 <b style="background:${trustColor};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:bold;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3));">${trustLevel}</b></div>
+                                            <div style="text-align:right;color:${tipSub};">评分 <b style="background:${trustColor};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">${trustScore}</b><span style="font-size:10px;opacity:0.75;">/100</span></div>
+                                            <div style="color:${tipDiv};font-size:10px;user-select:none;">|</div>
+                                            <div style="text-align:left;color:${tipSub};">诊断 <b style="background:${trustColor};-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">${trustLevel}</b></div>
                                         </div>
                                     </div>
                                 `;
 
                                 ctx.ui.tips?.(hoverContent, infoSpanDiv, {
-                                    tips: [3, tipBg],
+                                    tips: [3, 'transparent'],
                                     time: 0,
                                     success: (layero, index) => {
                                         if (layero && layero[0]) {
-                                            // 移除 Layer 默认的外层背景、阴影和边框，只保留我们自定义的圆角容器
-                                            layero.css({ 'background-color': 'transparent', 'box-shadow': 'none', 'border': 'none' });
-                                            layero.find('.layui-layer-content').css({ 'padding': '0', 'overflow': 'visible' });
-                                            layero.find('.layui-layer-TipsG').css('display', 'none'); // 隐藏那个小三角形，让界面更清爽
+                                            // 彻底移除 Layer 外层与内层 .layui-layer-content 默认方框背景、阴影和边框
+                                            layero.css({ 'background': 'transparent', 'background-color': 'transparent', 'box-shadow': 'none', 'border': 'none' });
+                                            layero.find('.layui-layer-content').css({ 'padding': '0', 'overflow': 'visible', 'background': 'transparent', 'background-color': 'transparent', 'box-shadow': 'none', 'border': 'none' });
+                                            layero.find('.layui-layer-TipsG').css('display', 'none');
 
                                             layero[0].onmouseenter = () => clearTimeout(hoverTimer);
                                             layero[0].onmouseleave = () => hoverTimer = setTimeout(() => ctx.ui.layer?.close?.(index), 200);
@@ -8442,19 +8443,22 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   const style = document.createElement("style");
   style.textContent = `
     .ns-ai-profile-tag {
-      margin-left: 8px;
-      padding: 2px 8px;
+      margin-left: 6px;
+      padding: 0 6px;
+      height: 19px;
+      line-height: 19px;
+      display: inline-flex;
+      align-items: center;
       border: 0;
-      border-radius: 5px;
+      border-radius: 4px;
       background: linear-gradient(135deg, #6750a4 0%, #8e44ad 100%);
       color: #fff !important;
-      font-size: 11px;
-      font-weight: 500;
-      line-height: 1.5;
+      font-size: 10.5px;
+      font-weight: 600;
       cursor: pointer;
       vertical-align: middle;
       white-space: nowrap;
-      box-shadow: 0 2px 5px rgba(103, 80, 164, .24);
+      box-sizing: border-box;
     }
 
     .ns-ai-profile-tag:hover { transform: translateY(-1px); }
@@ -8969,9 +8973,9 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
 
   const v26Style = document.createElement("style");
   v26Style.textContent = `
-    .ns-ai-profile-wrap { position:relative; display:inline-flex; align-items:center; margin-left:8px; vertical-align:middle; }
-    .ns-ai-profile-wrap .ns-ai-profile-tag { margin-left:0; border-radius:5px 0 0 5px; }
-    .ns-ai-profile-more { padding:2px 5px; border:0; border-left:1px solid rgba(255,255,255,.25); border-radius:0 5px 5px 0; background:#7656a8; color:#fff; font-size:10px; line-height:1.65; cursor:pointer; }
+    .ns-ai-profile-wrap { position:relative; display:inline-flex; align-items:center; height:19px; margin-left:6px; vertical-align:middle; }
+    .ns-ai-profile-wrap .ns-ai-profile-tag { margin-left:0; border-radius:4px 0 0 4px; height:19px; line-height:19px; padding:0 6px; font-size:10.5px; }
+    .ns-ai-profile-more { height:19px; line-height:19px; padding:0 4px; border:0; border-left:1px solid rgba(255,255,255,.25); border-radius:0 4px 4px 0; background:#7656a8; color:#fff; font-size:9px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; box-sizing:border-box; }
     .ns-ai-profile-wrap.ns-ai-tag-done .ns-ai-profile-tag, .ns-ai-profile-wrap.ns-ai-tag-done .ns-ai-profile-more { background:#3f7f9f; }
     .ns-ai-profile-wrap.ns-ai-tag-deep .ns-ai-profile-tag, .ns-ai-profile-wrap.ns-ai-tag-deep .ns-ai-profile-more { background:#356f91; }
     .ns-ai-profile-wrap.ns-ai-tag-running .ns-ai-profile-tag, .ns-ai-profile-wrap.ns-ai-tag-running .ns-ai-profile-more { background:#b07a2f; }
@@ -8986,10 +8990,10 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     .ns-ai-inline-toggle { margin-top:7px; }
     .ns-ai-toast { position:fixed; right:18px; bottom:18px; z-index:2147483646; max-width:320px; padding:9px 12px; border-radius:8px; background:#27313a; color:#fff; font-size:11px; box-shadow:0 8px 26px rgba(0,0,0,.22); opacity:0; transform:translateY(8px); transition:.18s ease; pointer-events:none; }
     .ns-ai-toast.show { opacity:1; transform:translateY(0); }
-    #ns-ai-account-preview { position:fixed; display:none; z-index:2147483645; width:min(300px,calc(100vw - 16px)); box-sizing:border-box; padding:12px; border:1px solid rgba(85,61,117,.18); border-radius:12px; background:rgba(255,255,255,.98); color:#34414c; box-shadow:0 14px 36px rgba(30,22,41,.2),0 2px 8px rgba(0,0,0,.08); font:11px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; text-align:left; }
-    .ns-ai-account-preview-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:2px; }
-    .ns-ai-account-preview-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#49356b; font-size:14px; font-weight:850; }
-    .ns-ai-account-preview-level { flex:0 0 auto; min-width:44px; padding:4px 9px; border-radius:999px; background:linear-gradient(135deg,#6750a4,#8e44ad); color:#fff; font-size:13px; font-weight:900; line-height:1.25; text-align:center; text-shadow:0 1px 2px rgba(0,0,0,.24); box-shadow:0 3px 9px rgba(35,29,47,.18); }
+    #ns-ai-account-preview { position:fixed; display:none; z-index:2147483645; width:min(260px,calc(100vw - 16px)); box-sizing:border-box; padding:10px 11px; border:1px solid rgba(85,61,117,.18); border-radius:10px; background:rgba(255,255,255,.98); color:#34414c; box-shadow:0 12px 30px rgba(30,22,41,.18),0 2px 6px rgba(0,0,0,.06); font:10.5px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; text-align:left; }
+    .ns-ai-account-preview-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px; }
+    .ns-ai-account-preview-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#49356b; font-size:12.5px; font-weight:800; }
+    .ns-ai-account-preview-level { flex:0 0 auto; min-width:36px; padding:2px 7px; border-radius:999px; background:linear-gradient(135deg,#6750a4,#8e44ad); color:#fff; font-size:11px; font-weight:800; line-height:1.2; text-align:center; }
     .ns-ai-account-preview-level.ns-ai-rank-0 { background:linear-gradient(135deg,#7f8a94,#555f68); }
     .ns-ai-account-preview-level.ns-ai-rank-1 { background:linear-gradient(135deg,#ef5350,#b71c1c); }
     .ns-ai-account-preview-level.ns-ai-rank-2 { background:linear-gradient(135deg,#ff9f43,#e8590c); }
