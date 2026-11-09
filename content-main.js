@@ -1,4 +1,4 @@
-// MJJ - Extension Main Content Script (v1.4.0)
+// MJJ - Extension Main Content Script (v1.4.1)
 (async function() {
   const gm = window.__NSX_GM__;
   if (gm && gm.ready) {
@@ -375,7 +375,8 @@
         cfg: { block_posts: { enabled: true, highlight_color: "#fff9c4" } },
         meta: {
             block_posts: {
-                label: "关键字管理", group: "🚫 过滤设置",
+                label: "标题关键词屏蔽与高亮", group: "🚫 过滤设置",
+                desc: "按帖子标题关键词自动折叠、彻底隐藏或背景染色高亮（支持逗号分隔多词同组匹配）。",
                 fields: {
                     highlight_color: { type: "COLOR", label: "默认高亮色" }
                 }
@@ -428,9 +429,8 @@
                         if (!item.querySelector('.nsx-fold-notice')) {
                             const notice = document.createElement('div');
                             notice.className = 'nsx-fold-notice';
-                            notice.style.padding = '10px 15px';
                             const kwText = foldWords.map(w => w.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])).join(', ');
-                            notice.innerHTML = `<span>已折叠包含关键词 [<b>${kwText}</b>] 的主题</span><span class="nsx-unfold-btn" style="text-decoration:underline;cursor:pointer">点此查看</span>`;
+                            notice.innerHTML = `<span class="nsx-fold-text">已折叠含关键词 [<b>${kwText}</b>] 的主题</span><span class="nsx-unfold-btn">点此查看</span>`;
                             notice.querySelector('.nsx-unfold-btn').onclick = () => { item.classList.remove('nsx-post-folded'); notice.style.display = 'none'; };
                             item.prepend(notice);
                         }
@@ -714,7 +714,13 @@
         id: "blockViewLevel",
         order: 222,
         cfg: { block_view_level: { enabled: true } },
-        meta: { block_view_level: { label: "低等级内容屏蔽", group: "🚫 过滤设置" } },
+        meta: {
+            block_view_level: {
+                label: "无权限锁帖隐藏（超出阅读等级）",
+                group: "🚫 过滤设置",
+                desc: "自动隐藏帖子列表中带有阅读权限锁（🔒 如 Lv.3 可见）且要求等级高于您当前账号等级、点进也无法查看正文的锁帖。"
+            }
+        },
         match: ctx => ctx.isList && ctx.store.get("block_view_level.enabled", true),
         init(ctx) { run($$('.post-list-item use[href="#lock"]'), ctx); },
         watch: ctx => ({ sel: '.post-list-item use[href="#lock"]', fn: els => run(els, ctx), opts: { debounce: 80 } })
@@ -750,6 +756,8 @@
             block_low_level: {
                 label: "低等级账号发帖屏蔽",
                 group: "🚫 过滤设置",
+                desc: "对低于设定等级的账号发布的主题进行模糊化、淡化折叠或隐藏处理（自动跳过自己与本地好友）。",
+                hidden: ["show_badge"],
                 fields: {
                     min_level: {
                         type: "SELECT",
@@ -776,11 +784,8 @@
                     blur_px: {
                         type: "NUMBER",
                         label: "模糊强度 (px)",
-                        valueType: "number"
-                    },
-                    show_badge: {
-                        type: "SWITCH",
-                        label: "显示低等级标识"
+                        valueType: "number",
+                        showWhen: { key: "mode", value: "blur" }
                     }
                 }
             }
@@ -892,15 +897,24 @@
                     .nsx-low-lv-badge {
                         font-size: 10px;
                         padding: 1px 5px;
-                        border-radius: 3px;
+                        border-radius: 4px;
                         margin-left: 4px;
-                        background-color: rgba(229, 57, 53, 0.12);
-                        border: 1px solid rgba(229, 57, 53, 0.45);
+                        background-color: rgba(229, 57, 53, 0.1);
+                        border: 1px solid rgba(229, 57, 53, 0.35);
                         color: #e53935;
                         vertical-align: middle;
                         line-height: 1.2;
                         font-weight: 600;
                         display: inline-block;
+                    }
+                    .nsx-low-lv-badge.is-normal {
+                        background-color: rgba(16, 185, 129, 0.1);
+                        border-color: rgba(16, 185, 129, 0.32);
+                        color: #059669;
+                    }
+                    body.dark-layout .nsx-low-lv-badge.is-normal,
+                    html.dark-layout .nsx-low-lv-badge.is-normal {
+                        color: #34d399;
                     }
                 `;
                 const existing = document.getElementById(styleId);
@@ -939,26 +953,38 @@
                 item.querySelectorAll(".nsx-low-lv-badge, .nsx-low-lv-fold-notice").forEach(el => el.remove());
             };
 
+            const isLowLvOrBadgeActive = () => {
+                return !!ctx.store.get("block_low_level.enabled", true) || !!ctx.store.get("level_badge.enabled", true);
+            };
+
             const applyEffectToItem = (item, entry, authorInfo) => {
                 if (!entry || typeof entry.r !== "number") return;
-                const enabled = ctx.store.get("block_low_level.enabled", true);
-                if (!enabled) return;
+                const blockEnabled = !!ctx.store.get("block_low_level.enabled", true);
+                const badgeEnabled = !!ctx.store.get("level_badge.enabled", true);
+                if (!blockEnabled && !badgeEnabled) return;
 
                 const minLevel = Number(ctx.store.get("block_low_level.min_level", 2)) || 2;
                 const mode = ctx.store.get("block_low_level.mode", "blur") || "blur";
-                const showBadge = ctx.store.get("block_low_level.show_badge", true);
+                const badgeScope = ctx.store.get("level_badge.scope", "low") || "low";
                 const rank = entry.r;
+                const isLow = rank < minLevel;
 
-                if (rank >= minLevel) return;
-
-                // 等级标识
-                if (showBadge && authorInfo.authorEl && !item.querySelector(".nsx-low-lv-badge")) {
+                // 等级标识（位于「🚀 基础功能 -> 显示等级标识」）
+                if (badgeEnabled && (isLow || badgeScope === "all") && authorInfo.authorEl && !item.querySelector(".nsx-low-lv-badge")) {
                     const badge = document.createElement("span");
-                    badge.className = "nsx-low-lv-badge";
+                    badge.className = `nsx-low-lv-badge${isLow ? "" : " is-normal"}`;
                     badge.textContent = `Lv.${rank}`;
-                    badge.title = `发帖人等级: Lv.${rank} (积分: ${entry.c ?? 0})，低于设定阈值 Lv.${minLevel}`;
+                    badge.title = isLow
+                        ? `发帖人等级: Lv.${rank} (积分: ${entry.c ?? 0})，低于设定阈值 Lv.${minLevel}`
+                        : `发帖人等级: Lv.${rank} (积分: ${entry.c ?? 0})`;
                     authorInfo.authorEl.after(badge);
                 }
+
+                if (!blockEnabled || !isLow) return;
+
+                // 跳过自己和本地好友的发帖屏蔽
+                if (ctx.uid && String(authorInfo.uid) === String(ctx.uid)) return;
+                if (authorInfo.isFriend) return;
 
                 if (mode === "hide") {
                     item.style.display = "none";
@@ -969,9 +995,8 @@
                     if (!item.querySelector(".nsx-low-lv-fold-notice")) {
                         const notice = document.createElement("div");
                         notice.className = "nsx-fold-notice nsx-low-lv-fold-notice";
-                        notice.style.padding = "10px 15px";
                         const safeName = String(authorInfo.username || `UID:${authorInfo.uid}`).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-                        notice.innerHTML = `<span>已折叠低等级账号 [<b>${safeName}</b> (Lv.${rank})] 发布的主题</span><span class="nsx-unfold-btn" style="text-decoration:underline;cursor:pointer">点此查看</span>`;
+                        notice.innerHTML = `<span class="nsx-fold-text">已折叠低等级账号 [<b>${safeName}</b> · Lv.${rank}] 发布的主题</span><span class="nsx-unfold-btn">点此查看</span>`;
                         notice.querySelector(".nsx-unfold-btn").onclick = (e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -987,7 +1012,7 @@
             };
 
             const processItems = (items = $$(".post-list-item")) => {
-                if (!ctx.store.get("block_low_level.enabled", true)) return;
+                if (!isLowLvOrBadgeActive()) return;
                 let friends = {};
                 try { friends = JSON.parse(localStorage.getItem("nsx_advanced_friends") || "{}"); } catch { }
 
@@ -995,10 +1020,7 @@
                     if (item.dataset.nsxLowLvProcessed === "1") return;
                     const authorInfo = extractAuthor(item);
                     if (!authorInfo.uid) return;
-
-                    // 跳过自己和本地好友
-                    if (ctx.uid && String(authorInfo.uid) === String(ctx.uid)) return;
-                    if (authorInfo.username && friends[authorInfo.username]) return;
+                    authorInfo.isFriend = !!(authorInfo.username && friends[authorInfo.username]);
 
                     item.dataset.nsxLowLvProcessed = "1";
                     const cached = memCache.get(String(authorInfo.uid));
@@ -1018,7 +1040,7 @@
                 updateBlurStyle();
                 const all = $$(".post-list-item");
                 all.forEach(clearItemEffect);
-                if (ctx.store.get("block_low_level.enabled", true)) {
+                if (isLowLvOrBadgeActive()) {
                     processItems(all);
                 }
             };
@@ -1604,12 +1626,36 @@
         default: instantPage
     }, Symbol.toStringTag, { value: 'Module' }));
 
-    // 等级标签已被移除
+    /* ==========================================================================
+       [ 🚀 基础功能 ] - 显示等级标识
+       ========================================================================== */
     const levelTag = {
         id: "levelTag",
-        cfg: {},
-        meta: {},
-        match: ctx => false,
+        order: 85,
+        cfg: {
+            level_badge: {
+                enabled: true,
+                scope: "low"
+            }
+        },
+        meta: {
+            level_badge: {
+                label: "显示等级标识",
+                group: "🚀 基础功能",
+                desc: "在帖子列表作者昵称旁显示用户等级标签（如 Lv.0 / Lv.1），可选择仅标记低等级账号或显示所有用户等级。",
+                fields: {
+                    scope: {
+                        type: "RADIO",
+                        label: "显示范围",
+                        options: [
+                            { value: "low", text: "仅低等级用户" },
+                            { value: "all", text: "全部用户 (Lv.0-Lv.6)" }
+                        ]
+                    }
+                }
+            }
+        },
+        match: () => false,
         init: () => { }
     };
 
@@ -2042,13 +2088,25 @@ html.dark-layout #mjj-cc-overlay {
 }
 .mjj-card-title-wrap {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+.mjj-card-title-line {
+    display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 .mjj-card-title {
     font-size: 13.5px;
     font-weight: 700;
     color: var(--mjj-text);
+}
+.mjj-card-desc {
+    font-size: 12px;
+    color: var(--mjj-text-sub);
+    line-height: 1.45;
 }
 .mjj-card-key {
     font-size: 11px;
@@ -2350,6 +2408,17 @@ html.dark-layout #mjj-cc-overlay {
     background: var(--mjj-bg-sub) !important;
     border-top: 1px solid var(--mjj-border) !important;
     padding: 12px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-foot-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-left: auto !important;
 }
 .ns-ai-settings-dialog .ns-ai-btn,
 #ns-ai-profile-panel .ns-ai-btn,
@@ -2359,7 +2428,10 @@ html.dark-layout #mjj-cc-overlay {
     border: 1px solid var(--mjj-border) !important;
     background: var(--mjj-bg-card) !important;
     color: var(--mjj-text) !important;
+    padding: 7px 13px !important;
+    font-size: 12.5px !important;
     font-weight: 600 !important;
+    cursor: pointer !important;
     transition: all 0.15s ease !important;
 }
 .ns-ai-settings-dialog .ns-ai-btn:hover,
@@ -2370,6 +2442,7 @@ html.dark-layout #mjj-cc-overlay {
     color: var(--mjj-accent) !important;
     background: var(--mjj-accent-soft) !important;
 }
+.ns-ai-settings-dialog .ns-ai-btn.primary,
 .ns-ai-settings-dialog .ns-ai-btn-primary,
 #ns-ai-profile-panel .ns-ai-btn-primary,
 .ns-ai-share-dialog .ns-ai-btn-primary,
@@ -2378,6 +2451,7 @@ html.dark-layout #mjj-cc-overlay {
     border-color: var(--mjj-accent) !important;
     color: #fff !important;
 }
+.ns-ai-settings-dialog .ns-ai-btn.primary:hover,
 .ns-ai-settings-dialog .ns-ai-btn-primary:hover,
 #ns-ai-profile-panel .ns-ai-btn-primary:hover,
 .ns-ai-share-dialog .ns-ai-btn-primary:hover,
@@ -4035,16 +4109,20 @@ html.dark-layout #mjj-cc-overlay {
                 const inferType = (v, m) => m?.type || (Array.isArray(v) ? "TEXTAREA" : typeof v === "boolean" ? "SWITCH" : typeof v === "number" ? "NUMBER" : "TEXT");
                 const inferVT = (v, m) => m?.valueType || (Array.isArray(v) ? "array" : typeof v === "number" ? "number" : typeof v === "boolean" ? "boolean" : "string");
 
-                const makeFieldEl = (f, path, val, defaultCol = 12) => {
+                const makeFieldEl = (f, path, val, defaultCol = 12, onAfterCommit = null) => {
                     const col = f.col ?? defaultCol;
                     const isBlock = f.type === "TEXTAREA";
                     const field = el("div", `mjj-field${col === 6 ? " col-6" : ""}${isBlock ? " is-block" : ""}`);
                     const lbl = el("div", "mjj-field-label", field);
                     lbl.textContent = f.label || f.key;
                     const ctrl = el("div", "mjj-field-ctrl", field);
+                    const applyCommit = (nextVal) => {
+                        commitValue(path, nextVal);
+                        onAfterCommit?.(f.key, nextVal);
+                    };
 
                     if (f.type === "SWITCH") {
-                        const sw = createSwitchEl(val, (checked) => commitValue(path, checked));
+                        const sw = createSwitchEl(val, (checked) => applyCommit(checked));
                         ctrl.appendChild(sw.wrap);
                     } else if (f.type === "RADIO" && Array.isArray(f.options)) {
                         const seg = el("div", "mjj-segmented", ctrl);
@@ -4057,7 +4135,7 @@ html.dark-layout #mjj-cc-overlay {
                                 btns.forEach(x => x.classList.remove("is-active"));
                                 b.classList.add("is-active");
                                 const nextVal = f.valueType === "number" ? Number(opt.value) : opt.value;
-                                commitValue(path, nextVal);
+                                applyCommit(nextVal);
                             });
                             btns.push(b);
                         });
@@ -4071,7 +4149,7 @@ html.dark-layout #mjj-cc-overlay {
                         });
                         sel.addEventListener("change", () => {
                             const nextVal = f.valueType === "number" ? Number(sel.value) : sel.value;
-                            commitValue(path, nextVal);
+                            applyCommit(nextVal);
                         });
                     } else if (f.type === "COLOR") {
                         const cWrap = el("div", "mjj-color-wrap", ctrl);
@@ -4089,19 +4167,19 @@ html.dark-layout #mjj-cc-overlay {
 
                         swatch.addEventListener("input", () => {
                             txtInp.value = swatch.value;
-                            commitValue(path, swatch.value);
+                            applyCommit(swatch.value);
                         });
                         txtInp.addEventListener("change", () => {
                             const final = txtInp.value.trim() || f.defaultVal || "";
                             txtInp.value = final;
                             swatch.value = toHexColor(final);
-                            commitValue(path, final);
+                            applyCommit(final);
                         });
                         resetBtn.addEventListener("click", () => {
                             const def = f.defaultVal || "";
                             txtInp.value = def;
                             swatch.value = toHexColor(def);
-                            commitValue(path, def);
+                            applyCommit(def);
                         });
                     } else if (f.type === "TEXTAREA") {
                         const ta = el("textarea", "mjj-textarea", ctrl);
@@ -4111,7 +4189,7 @@ html.dark-layout #mjj-cc-overlay {
                             const nextVal = f.valueType === "array"
                                 ? ta.value.split("\n").map(s => s.trim()).filter(Boolean)
                                 : ta.value;
-                            commitValue(path, nextVal);
+                            applyCommit(nextVal);
                         });
                     } else {
                         const inp = el("input", `mjj-input${f.type === "NUMBER" ? " mjj-input-num" : ""}`, ctrl);
@@ -4123,7 +4201,7 @@ html.dark-layout #mjj-cc-overlay {
                                 const n = Number(inp.value);
                                 nextVal = Number.isFinite(n) ? n : 0;
                             }
-                            commitValue(path, nextVal);
+                            applyCommit(nextVal);
                         });
                     }
                     return field;
@@ -4144,10 +4222,15 @@ html.dark-layout #mjj-cc-overlay {
 
                     const hdr = el("div", "mjj-card-header", card);
                     const tWrap = el("div", "mjj-card-title-wrap", hdr);
-                    const tEl = el("span", "mjj-card-title", tWrap);
+                    const tLine = el("div", "mjj-card-title-line", tWrap);
+                    const tEl = el("span", "mjj-card-title", tLine);
                     tEl.textContent = m.label || entry.key;
-                    const kEl = el("span", "mjj-card-key", tWrap);
+                    const kEl = el("span", "mjj-card-key", tLine);
                     kEl.textContent = entry.key;
+                    if (m.desc) {
+                        const dEl = el("div", "mjj-card-desc", tWrap);
+                        dEl.textContent = m.desc;
+                    }
 
                     if (typeof cfg.enabled === "boolean") {
                         const sw = createSwitchEl(isEnabled, (checked) => {
@@ -4160,6 +4243,13 @@ html.dark-layout #mjj-cc-overlay {
                     const body = el("div", "mjj-card-body", card);
                     const fields = m.fields || {}, hidden = new Set(m.hidden || []);
                     const cols = m.cols || 1, defaultCol = Math.floor(12 / cols);
+                    const conditionalItems = [];
+                    const syncConditionalFields = () => {
+                        conditionalItems.forEach(({ fe, showWhen }) => {
+                            const depVal = store.get(`${base}.${showWhen.key}`, cfg[showWhen.key]);
+                            fe.style.display = String(depVal) === String(showWhen.value) ? "" : "none";
+                        });
+                    };
 
                     Object.keys(cfg).filter(k => k !== "enabled" && !isObj(cfg[k]) && !hidden.has(k)).forEach(k => {
                         const fm = fields[k] || {};
@@ -4175,12 +4265,32 @@ html.dark-layout #mjj-cc-overlay {
                         };
                         let cur = store.get(`${base}.${k}`, cfg[k]);
                         if (k === "blacklist_mode" && cur === "hide") cur = "official";
-                        const fe = makeFieldEl(f, `${base}.${k}`, cur, defaultCol);
-                        if (fe) body.appendChild(fe);
+                        const fe = makeFieldEl(f, `${base}.${k}`, cur, defaultCol, syncConditionalFields);
+                        if (fe) {
+                            if (fm.showWhen) conditionalItems.push({ fe, showWhen: fm.showWhen });
+                            body.appendChild(fe);
+                        }
                     });
+                    syncConditionalFields();
 
                     // Extra quick action buttons for specific cards
-                    if (entry.key === "ai_profile_ext") {
+                    if (entry.key === "block_posts") {
+                        let kwMap = {};
+                        try { kwMap = JSON.parse(localStorage.getItem("nsx_advanced_keywords") || "{}"); } catch { }
+                        const kwVals = Object.values(kwMap || {});
+                        const blockCnt = kwVals.filter(v => v?.type === "block").length;
+                        const hlCnt = kwVals.filter(v => v?.type === "highlight").length;
+
+                        const row = el("div", "mjj-field", body);
+                        const lbl = el("div", "mjj-field-label", row);
+                        lbl.textContent = `已配置词条：屏蔽词 ${blockCnt} 组 / 高亮词 ${hlCnt} 组`;
+                        const btn = el("button", "mjj-btn is-primary", row);
+                        btn.type = "button";
+                        btn.textContent = "🔍 打开关键词管理列表（新增 / 编辑词条）";
+                        btn.addEventListener("click", () => {
+                            triggerTopBarIcon("#nsx-icon-group .filter-dropdown-on");
+                        });
+                    } else if (entry.key === "ai_profile_ext") {
                         const row = el("div", "mjj-field", body);
                         const lbl = el("div", "mjj-field-label", row);
                         lbl.textContent = "AI 模型、API Key 与 Prompt 预设";
@@ -5866,14 +5976,14 @@ html.dark-layout #mjj-cc-overlay {
 </svg>`;
 
     // ===== 基础 CSS =====
-    const BASE_CSS = `.blocked-post{display:none!important}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
+    const BASE_CSS = `.blocked-post{display:none!important}.nsx-post-folded>*:not(.nsx-fold-notice){display:none!important}.nsx-post-folded{background:transparent!important;background-color:transparent!important;padding:0!important;min-height:0!important;border-bottom:1px dashed rgba(148,163,184,.18)!important}.nsx-fold-notice{width:100%;box-sizing:border-box;padding:4px 12px!important;font-size:12px;line-height:1.4;color:#94a3b8!important;opacity:.7;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:opacity .15s ease,background-color .15s ease}.nsx-fold-notice:hover{opacity:.95;background-color:rgba(148,163,184,.05)}.nsx-fold-notice b{font-weight:500;color:#64748b}body.dark-layout .nsx-fold-notice b,html.dark-layout .nsx-fold-notice b{color:#cbd5e1}.nsx-unfold-btn{font-size:11px;color:#94a3b8!important;padding:1px 7px;border-radius:4px;border:1px solid rgba(148,163,184,.25);text-decoration:none!important;cursor:pointer;flex-shrink:0;transition:all .15s ease}.nsx-unfold-btn:hover{color:#64748b!important;border-color:rgba(148,163,184,.5);background:rgba(148,163,184,.1)}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
 
     const applyRuntimeSettings = (ctx, changedKeys = []) => {
         const changed = new Set(changedKeys || []);
         const has = (prefix) => [...changed].some(k => k === prefix || k.startsWith(prefix + "."));
 
         if (has("block_posts")) window.__nsxRuntime?.reapplyKeywords?.();
-        if (has("block_low_level")) window.__nsxRuntime?.reapplyLowLevelFilter?.();
+        if (has("block_low_level") || has("level_badge")) window.__nsxRuntime?.reapplyLowLevelFilter?.();
         if (has("relation")) window.__nsxRuntime?.reapplyRelation?.();
         if (has("history")) window.__nsxRuntime?.refreshHistory?.();
         if (has("open_post_in_new_tab")) {
@@ -6847,14 +6957,18 @@ html.dark-layout #mjj-cc-overlay {
                     display: inline-flex; align-items: center; justify-content: center;
                 }
 
-                /* 折叠模式 */
+                /* 折叠模式（淡化柔和样式） */
                 .nsx-post-folded > *:not(.nsx-fold-notice) { display: none !important; }
-                .nsx-post-folded { background-color: rgba(244, 67, 54, 0.05) !important; padding: 0 !important; }
+                .nsx-post-folded { background: transparent !important; background-color: transparent !important; padding: 0 !important; min-height: 0 !important; }
                 .nsx-fold-notice {
-                    font-size: 12px; color: #f44336; padding: 10px; opacity: 0.8;
-                    display: flex; justify-content: space-between; align-items: center;
+                    width: 100%; box-sizing: border-box; font-size: 12px; line-height: 1.4;
+                    color: #94a3b8 !important; padding: 4px 12px !important; opacity: 0.7;
+                    display: flex; justify-content: space-between; align-items: center; gap: 12px;
                 }
-                .nsx-unfold-btn { cursor: pointer; text-decoration: underline; }
+                .nsx-unfold-btn {
+                    font-size: 11px; color: #94a3b8 !important; padding: 1px 7px; border-radius: 4px;
+                    border: 1px solid rgba(148, 163, 184, 0.25); cursor: pointer; text-decoration: none !important; flex-shrink: 0;
+                }
 
                 /* 彻底隐藏模式 */
                 .nsx-post-hidden { display: none !important; }
@@ -6959,11 +7073,10 @@ html.dark-layout #mjj-cc-overlay {
                                 itemEl.classList.add('nsx-post-folded');
                                 const notice = document.createElement('div');
                                 notice.className = 'nsx-fold-notice';
-                                notice.style.padding = '12px 15px';
                                 const _esc2 = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
                                 notice.innerHTML = `
-                                <span> 已折叠来自黑名单用户 [<b>${_esc2(username)}</b>] 的主题。备注: ${_esc2(blInfo.remark || '无')}</span>
-                                <span class="nsx-unfold-btn">临时展开</span>
+                                <span class="nsx-fold-text">已折叠黑名单用户 [<b>${_esc2(username)}</b>] 的主题（备注: ${_esc2(blInfo.remark || '无')}）</span>
+                                <span class="nsx-unfold-btn">点此查看</span>
                             `;
                                 notice.querySelector('.nsx-unfold-btn').onclick = (e) => {
                                     e.preventDefault();
@@ -10125,15 +10238,15 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     settingsDraft.imageHosting = sanitizeImageHosting(AI_SETTINGS.imageHosting, AI_SETTINGS.imageHost);
 
     hostEl.innerHTML = `
-      <div class="ns-ai-dialog mjj-embedded-ai">
+      <div class="ns-ai-settings-dialog mjj-embedded-ai">
         <div class="ns-ai-settings-body">
           <div class="ns-ai-settings-pane mjj-standalone-image-pane"></div>
         </div>
         <div class="ns-ai-settings-foot">
           <div class="ns-ai-settings-status mjj-standalone-image-status"></div>
           <div class="ns-ai-settings-foot-actions">
-            <button class="ns-ai-btn mjj-img-reset-btn" type="button">还原修改</button>
-            <button class="ns-ai-btn primary mjj-img-save-btn" type="button">💾 保存图床配置</button>
+            <button class="mjj-btn mjj-img-reset-btn" type="button">↩️ 还原修改</button>
+            <button class="mjj-btn is-primary mjj-img-save-btn" type="button">💾 保存图床配置</button>
           </div>
         </div>
       </div>`;
