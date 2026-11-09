@@ -2360,15 +2360,6 @@ html.dark-layout #mjj-cc-overlay {
         } catch { }
         return extra;
     };
-    const decodeTmStorageVal = (raw) => {
-        if (typeof raw !== "string" || raw.length === 0) return raw;
-        const prefix = raw[0], body = raw.slice(1);
-        if (prefix === "b") return body === "true";
-        if (prefix === "n") return Number(body);
-        if (prefix === "s") return body;
-        if (prefix === "o") { try { return JSON.parse(body); } catch { return raw; } }
-        return raw;
-    };
     const createBackupPayload = async () => ({
         format: "nsx-backup",
         schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -2389,84 +2380,11 @@ html.dark-layout #mjj-cc-overlay {
     });
     const isValidBackupPayload = payload => {
         if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
-        // 1. 标准 NSX_Pro_backup_*.json
-        if (payload.format === "nsx-backup" && payload.data && typeof payload.data === "object") {
-            return true;
-        }
-        // 2. Tampermonkey 实用工具导出的全量备份 JSON (含 scripts 数组)
-        if (Array.isArray(payload.scripts)) return true;
-        // 3. Tampermonkey 单个脚本「存储 (Storage)」页导出的 JSON 或 AI 画像 / 私信备份配置 JSON
-        if (
-            payload["ns-ai-profile-v2.8-settings"] ||
-            payload.providers ||
-            payload.webdav_config ||
-            payload.r2worker_config ||
-            payload.settings ||
-            (payload.config && (payload.config.webdav || payload.config.r2))
-        ) {
-            return true;
-        }
-        return false;
+        if (payload.format !== "nsx-backup") return false;
+        if (!payload.data || typeof payload.data !== "object" || Array.isArray(payload.data)) return false;
+        return true;
     };
     const applyBackupPayload = async (payload) => {
-        // 分支 A: Tampermonkey 实用工具全量导出文件 (scripts 数组)
-        if (Array.isArray(payload?.scripts)) {
-            payload.scripts.forEach(sc => {
-                const rawData = sc?.storage?.data;
-                if (!rawData || typeof rawData !== "object") return;
-                for (const [k, rawVal] of Object.entries(rawData)) {
-                    const val = decodeTmStorageVal(rawVal);
-                    if (k === "settings" && val && typeof val === "object") {
-                        GM_setValue("settings", normalizeSettingsForBackup(val));
-                    } else {
-                        GM_setValue(k, val);
-                    }
-                }
-            });
-            cfgCache = null;
-            return;
-        }
-
-        // 分支 B: ns-df-chat-backup 备份文件 ({ metadata, config, chats })
-        if (payload?.config && (payload.config.webdav || payload.config.r2 || payload.config.backup)) {
-            if (payload.config.backup) {
-                GM_setValue("backup_webdav_enabled", payload.config.backup.webdav_enabled ?? true);
-                GM_setValue("backup_r2_enabled", payload.config.backup.r2_enabled ?? false);
-            }
-            if (payload.config.retention) {
-                GM_setValue("retention_type", payload.config.retention.type || "count");
-                GM_setValue("retention_count", payload.config.retention.count || 30);
-                GM_setValue("retention_days", payload.config.retention.days || 30);
-            }
-            if (payload.config.webdav?.serverUrl) {
-                GM_setValue("webdav_config", JSON.stringify(payload.config.webdav));
-            }
-            if (payload.config.r2?.workerBaseUrl) {
-                GM_setValue("r2worker_config", JSON.stringify(payload.config.r2));
-            }
-            return;
-        }
-
-        // 分支 C: Tampermonkey 脚本「存储 (Storage)」JSON 或直接的 AI 画像配置对象
-        if (payload?.format !== "nsx-backup") {
-            if (payload.providers && payload.activeProvider) {
-                GM_setValue("ns-ai-profile-v2.8-settings", payload);
-                return;
-            }
-            for (const [k, v] of Object.entries(payload)) {
-                const decoded = decodeTmStorageVal(v);
-                if (k === "settings" && decoded && typeof decoded === "object") {
-                    cfgCache = null;
-                    GM_setValue("settings", normalizeSettingsForBackup(decoded));
-                } else {
-                    GM_setValue(k, decoded);
-                }
-            }
-            cfgCache = null;
-            return;
-        }
-
-        // 分支 D: 标准 nsx-backup 格式
         const importedSettings = normalizeSettingsForBackup(payload?.data?.settings || {});
         const importedGm = payload?.data?.gmStorage || {};
         const importedLs = payload?.data?.localStorage || {};
@@ -2582,7 +2500,7 @@ html.dark-layout #mjj-cc-overlay {
             const importConfig = () => {
                 const input = document.createElement("input");
                 input.type = "file";
-                input.accept = "application/json,.json,.txt";
+                input.accept = "application/json,.json";
                 input.style.display = "none";
                 input.onchange = () => {
                     const file = input.files?.[0];
@@ -2595,14 +2513,14 @@ html.dark-layout #mjj-cc-overlay {
                             const proceed = async () => {
                                 try {
                                     await applyBackupPayload(payload);
-                                    ctx.ui.success?.("配置已成功还原/迁移，页面即将刷新");
+                                    ctx.ui.success?.("配置已还原，页面即将刷新");
                                     setTimeout(() => location.reload(), 600);
                                 } catch (e) {
                                     env.error("Import config apply failed", e);
                                     ctx.ui.error?.("还原失败，请检查备份文件");
                                 }
                             };
-                            const msg = "将导入并合并/覆盖设置、AI 画像配置、私信备份设置、关键词、历史记录和社交关系数据，是否继续？";
+                            const msg = "将覆盖当前脚本设置、关键词、浏览历史、快捷回复和社交关系数据，是否继续？";
                             if (window.confirm(msg)) proceed();
                         } catch (e) {
                             env.error("Import config parse failed", e);
@@ -3162,11 +3080,11 @@ html.dark-layout #mjj-cc-overlay {
                     });
                 });
 
-                // 3. Backup & Migration Pane
-                const backupPane = addNavTab("backup", "📦 备份与迁移", "4格式");
+                // 3. Backup Pane
+                const backupPane = addNavTab("backup", "📦 配置备份");
                 const bkSuite = el("div", "mjj-suite-card", backupPane);
                 const bkTitle = el("div", "mjj-suite-title", bkSuite);
-                bkTitle.textContent = "📦 全量配置备份与多格式迁移中心";
+                bkTitle.textContent = "📦 配置导出与还原";
                 const bkDesc = el("div", "mjj-suite-desc", bkSuite);
                 bkDesc.innerHTML = `导出文件将完整包含：<br>
 • <b>MJJ 基础与视觉设置</b>（全部开关、等级过滤阈值、配色、快捷键等）<br>
@@ -3176,22 +3094,13 @@ html.dark-layout #mjj-cc-overlay {
                 const bkBtns = el("div", "mjj-btn-row", bkSuite);
                 const expBtn = el("button", "mjj-btn is-primary", bkBtns);
                 expBtn.type = "button";
-                expBtn.textContent = "📦 导出 MJJ 全量备份 (.json)";
+                expBtn.textContent = "📦 导出配置 (.json)";
                 expBtn.addEventListener("click", exportConfig);
 
                 const impBtn = el("button", "mjj-btn", bkBtns);
                 impBtn.type = "button";
-                impBtn.textContent = "♻️ 导入 / 迁移旧脚本配置 (.json)";
+                impBtn.textContent = "♻️ 还原配置 (.json)";
                 impBtn.addEventListener("click", importConfig);
-
-                const compatSuite = el("div", "mjj-suite-card", backupPane);
-                const compatTitle = el("div", "mjj-suite-title", compatSuite);
-                compatTitle.textContent = "✅ 支持直接导入的 4 种备份格式";
-                const compatDesc = el("div", "mjj-suite-desc", compatSuite);
-                compatDesc.innerHTML = `1. <b>MJJ / Nodeseek Pro 标准备份文件</b> (<code>MJJ_backup_*.json</code> / <code>NSX_Pro_backup_*.json</code>)<br>
-2. <b>Tampermonkey 全量导出压缩包内文件</b>（油猴面板 → 实用工具 → 导出文件生成的 JSON，自动识别并提取旧脚本配置）<br>
-3. <b>NodeSeek AI 画像配置 JSON</b>（旧脚本存储页导出的 <code>ns-ai-profile-v2.8-settings</code> JSON）<br>
-4. <b>NS-DF 私信备份云端 JSON</b>（WebDAV / R2 上的 <code>nodeseek_chat_backup_*.json</code>，自动恢复服务器配置）`;
 
                 const cacheSuite = el("div", "mjj-suite-card", backupPane);
                 const cacheTitle = el("div", "mjj-suite-title", cacheSuite);
@@ -3318,8 +3227,8 @@ html.dark-layout #mjj-cc-overlay {
                 { name: "sign_in", cb: switchState, text: "自动签到", states: [{ s1: "❌", s2: "关闭" }, { s1: "🎲", s2: "随机🍗" }, { s1: "📌", s2: "5个🍗" }] },
                 { name: "re_sign", cb: reSign, text: "🔂 重试签到", states: [] },
                 { name: "open_post_in_new_tab", cb: switchNewTab, text: "新标签页打开帖子", states: [{ s1: "❌", s2: "关闭" }, { s1: "✅", s2: "开启" }] },
-                { name: "export_config", cb: exportConfig, text: "📦 导出全量配置", states: [] },
-                { name: "import_config", cb: importConfig, text: "♻️ 导入/迁移配置", states: [], autoClose: false },
+                { name: "export_config", cb: exportConfig, text: "📦 导出配置", states: [] },
+                { name: "import_config", cb: importConfig, text: "♻️ 还原配置", states: [], autoClose: false },
                 { name: "feedback", cb: () => GM_openInTab("https://github.com/Youngv/MJJ/issues", { active: true, insert: true, setParent: true }), text: "💬 反馈 & 建议", states: [] }
             ];
 
