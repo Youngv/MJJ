@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Nodeseek Pro All-in-One",
+  "name": "MJJ",
   "version": "1.1.0",
   "description": "NodeSeek / DeepFlood 全能增强插件：集成 Nodeseek Pro、低等级发帖模糊屏蔽、用户 AI 画像与深度交易分析、私信本地缓存与 WebDAV/R2 备份。",
   "icons": {
@@ -9,7 +9,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Nodeseek Pro All-in-One",
+    "default_title": "MJJ",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

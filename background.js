@@ -1,4 +1,4 @@
-// Nodeseek Pro All-in-One - Background Service Worker (MV3)
+// MJJ All-in-One - Background Service Worker (MV3)
 
 const activeRequests = new Map();
 
@@ -51,7 +51,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.notifications.create({
       type: "basic",
       iconUrl: "icons/icon128.png",
-      title: msg.title || "Nodeseek Pro",
+      title: msg.title || "MJJ",
       message: msg.text || ""
     }, () => {
       sendResponse({ ok: true });

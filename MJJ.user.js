@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Nodeseek Pro (增强版)
+// @name         MJJ
 // @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
 // @version      1.1.0
@@ -39,8 +39,8 @@
 // @connect      *
 // @run-at       document-idle
 // @license      GPL-3.0
-// @downloadURL  https://gist.githubusercontent.com/Youngv/7db77218438c731535e89bfa718e8553/raw/Nodeseek_Pro.user.js
-// @updateURL    https://gist.githubusercontent.com/Youngv/7db77218438c731535e89bfa718e8553/raw/Nodeseek_Pro.user.js
+// @downloadURL  https://github.com/Youngv/MJJ/raw/main/MJJ.user.js
+// @updateURL    https://github.com/Youngv/MJJ/raw/main/MJJ.user.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -1176,7 +1176,7 @@
 
         const wrap = document.createElement("span");
         wrap.className = "callout-inserter-wrapper toolbar-item";
-        wrap.title = "Callout - Nodeseek Pro";
+        wrap.title = "Callout - MJJ";
         setV(wrap);
 
         const btn = document.createElement("span");
@@ -2198,7 +2198,7 @@
                 const w = window.layui.device().mobile ? "100%" : "620px";
                 ctx.ui.layer.open({
                     type: 1, offset: "r", anim: "slideLeft", area: [w, "100%"], scrollbar: false, shade: 0.1, shadeClose: false,
-                    btn: ["保存设置", "取消"], btnAlign: "r", title: "Nodeseek Pro 设置", id: "setting-layer-direction-r", content: cont.outerHTML,
+                    btn: ["保存设置", "取消"], btnAlign: "r", title: "MJJ 设置", id: "setting-layer-direction-r", content: cont.outerHTML,
                     success: ly => {
                         const r = ly?.[0] || ly;
                         try { window.layui.form?.render(); } catch { }

@@ -1,4 +1,4 @@
-// Nodeseek Pro All-in-One - MAIN World Content Script (v1.1.0)
+// MJJ - MAIN World Content Script (v1.1.0)
 (function () {
   "use strict";
   const __gm = window.__NSX_GM__;
@@ -1158,7 +1158,7 @@
 
         const wrap = document.createElement("span");
         wrap.className = "callout-inserter-wrapper toolbar-item";
-        wrap.title = "Callout - Nodeseek Pro";
+        wrap.title = "Callout - MJJ";
         setV(wrap);
 
         const btn = document.createElement("span");
@@ -2180,7 +2180,7 @@
                 const w = window.layui.device().mobile ? "100%" : "620px";
                 ctx.ui.layer.open({
                     type: 1, offset: "r", anim: "slideLeft", area: [w, "100%"], scrollbar: false, shade: 0.1, shadeClose: false,
-                    btn: ["保存设置", "取消"], btnAlign: "r", title: "Nodeseek Pro 设置", id: "setting-layer-direction-r", content: cont.outerHTML,
+                    btn: ["保存设置", "取消"], btnAlign: "r", title: "MJJ 设置", id: "setting-layer-direction-r", content: cont.outerHTML,
                     success: ly => {
                         const r = ly?.[0] || ly;
                         try { window.layui.form?.render(); } catch { }

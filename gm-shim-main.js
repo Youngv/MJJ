@@ -1,4 +1,4 @@
-// Nodeseek Pro All-in-One - MAIN World GM_* Shim (gm-shim-main.js)
+// MJJ - MAIN World GM_* Shim (gm-shim-main.js)
 (function () {
   "use strict";
 
@@ -208,7 +208,7 @@
 
   const GM_info = {
     script: {
-      name: "Nodeseek Pro All-in-One",
+      name: "MJJ",
       version: "1.1.0",
       namespace: "http://www.nodeseek.com/"
     },
@@ -347,10 +347,10 @@
 
   function GM_notification(detailsOrText, title) {
     if (typeof detailsOrText === "string") {
-      sendToBridge("GM_NOTIFICATION", { title: title || "Nodeseek Pro", text: detailsOrText });
+      sendToBridge("GM_NOTIFICATION", { title: title || "MJJ", text: detailsOrText });
     } else if (detailsOrText && typeof detailsOrText === "object") {
       sendToBridge("GM_NOTIFICATION", {
-        title: detailsOrText.title || "Nodeseek Pro",
+        title: detailsOrText.title || "MJJ",
         text: detailsOrText.text || ""
       });
       if (typeof detailsOrText.ondone === "function") {
