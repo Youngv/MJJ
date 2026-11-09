@@ -2,14 +2,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>MJJ</title>
+  <title>MJJ 控制面板</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      width: 310px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #141720;
-      color: #e5e7eb;
+      width: 336px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
       padding: 14px;
       user-select: none;
     }
@@ -18,69 +18,125 @@
       align-items: center;
       justify-content: space-between;
       padding-bottom: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
     }
     .brand img {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
     }
     .brand-title {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 14.5px;
+      font-weight: 800;
       color: #fff;
+      letter-spacing: 0.3px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: #94a3b8;
     }
     .badge {
       font-size: 11px;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 99px;
-      background: linear-gradient(135deg, #1076ff, #6366f1);
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 700;
+    }
+    .hero-btn {
+      width: 100%;
+      padding: 11px 14px;
+      margin-bottom: 10px;
+      border-radius: 11px;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(14, 165, 233, 0.18) 100%);
       color: #fff;
-      font-weight: 600;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.16s ease;
+    }
+    .hero-btn:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.34) 0%, rgba(14, 165, 233, 0.28) 100%);
+      border-color: #10b981;
+      transform: translateY(-1px);
+    }
+    .hero-hint {
+      font-size: 11px;
+      font-weight: 500;
+      color: #34d399;
+      background: rgba(15, 23, 42, 0.55);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 8px 2px 6px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 8px;
     }
     .menu-list {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 380px;
+      max-height: 360px;
       overflow-y: auto;
     }
     .menu-btn {
       width: 100%;
       text-align: left;
-      padding: 9px 12px;
-      border-radius: 8px;
+      padding: 9px 11px;
+      border-radius: 9px;
       border: 1px solid rgba(255, 255, 255, 0.07);
-      background: rgba(255, 255, 255, 0.04);
-      color: #f3f4f6;
-      font-size: 13px;
-      font-weight: 500;
+      background: #1e293b;
+      color: #f1f5f9;
+      font-size: 12.5px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.14s ease;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 6px;
     }
     .menu-btn:hover {
-      background: rgba(16, 118, 255, 0.18);
-      border-color: rgba(16, 118, 255, 0.45);
-      transform: translateY(-1px);
-    }
-    .menu-btn:active {
-      transform: translateY(0);
+      background: #263449;
+      border-color: rgba(16, 185, 129, 0.45);
+      color: #34d399;
     }
     .empty {
       padding: 16px 10px;
       text-align: center;
-      color: #9ca3af;
+      color: #94a3b8;
       font-size: 12px;
       line-height: 1.6;
+      background: #1e293b;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
     .quick-links {
       display: flex;
@@ -91,29 +147,32 @@
       flex: 1;
       text-align: center;
       padding: 8px 0;
-      border-radius: 7px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #60a5fa;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
       text-decoration: none;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      border: 1px solid rgba(96, 165, 250, 0.25);
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
     .quick-link:hover {
-      background: rgba(96, 165, 250, 0.15);
+      background: rgba(16, 185, 129, 0.24);
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="brand">
-      <img src="icons/icon48.png" alt="NS">
-      <span class="brand-title">MJJ</span>
+      <img src="icons/icon48.png" alt="MJJ">
+      <div class="brand-text">
+        <span class="brand-title">MJJ 控制面板</span>
+        <span class="brand-sub">NodeSeek & DeepFlood 全能套件</span>
+      </div>
     </div>
-    <span class="badge">v1.1.0</span>
+    <span class="badge">v1.2.0</span>
   </div>
-  <div id="menu-container" class="menu-list">
+  <div id="menu-container">
     <div class="empty">正在连接当前页面...</div>
   </div>
   <script src="popup.js"></script>

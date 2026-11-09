@@ -2,7 +2,7 @@
 // @name         MJJ
 // @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
-// @version      1.1.0
+// @version      1.2.0
 // @match        *://www.nodeseek.com/*
 // @match        *://www.deepflood.com/*
 // @require      https://s4.zstatic.net/ajax/libs/layui/2.10.3/layui.min.js
@@ -1641,7 +1641,626 @@
        ========================================================================== */
     // 菜单系统（油猴菜单 + 高级设置面板）
 
-    const CSS$1 = `#nsx-config-menu{height:100%;overflow-y:visible;border-right:1px solid #eee}#nsx-config-content{height:100%;overflow-y:auto;padding:0 15px;background:#f8f8f8}.nsx-config-card{margin-bottom:20px}.nsx-config-card .layui-card-header{display:flex;align-items:center;justify-content:space-between;font-weight:700}.nsx-config-card .header-checkbox{position:absolute;right:15px;top:50%;transform:translateY(-50%)}.nsx-config-card .layui-form-switch{margin-top:0!important}.nsx-config-card .layui-card-body:empty{padding-top:0;padding-bottom:0}.nsx-config-card .layui-form-label{width:110px!important;padding:9px 10px!important}.nsx-config-card .layui-input-block{margin-left:140px!important}.nsx-config-tools{display:flex;gap:10px;flex-wrap:wrap}.nsx-config-tools .layui-btn{min-width:120px}.nsx-config-tools-tip{margin-top:10px;font-size:12px;color:#888;line-height:1.6}.dark-layout #nsx-config-menu{border-right-color:#3a3a3a}.dark-layout #nsx-config-content{background:#1e1e1e}.dark-layout .nsx-config-tools-tip{color:#999}`;
+    const CSS$1 = `
+#mjj-cc-overlay {
+    --mjj-bg: #ffffff;
+    --mjj-bg-sub: #f8fafc;
+    --mjj-bg-card: #ffffff;
+    --mjj-bg-hover: #f1f5f9;
+    --mjj-text: #0f172a;
+    --mjj-text-sub: #64748b;
+    --mjj-border: #e2e8f0;
+    --mjj-accent: #10b981;
+    --mjj-accent-hover: #059669;
+    --mjj-accent-soft: rgba(16, 185, 129, 0.12);
+    --mjj-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.28);
+    position: fixed;
+    inset: 0;
+    z-index: 100050;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body.dark-layout #mjj-cc-overlay,
+html.dark-layout #mjj-cc-overlay {
+    --mjj-bg: #0f172a;
+    --mjj-bg-sub: #131c31;
+    --mjj-bg-card: #1e293b;
+    --mjj-bg-hover: #263449;
+    --mjj-text: #f1f5f9;
+    --mjj-text-sub: #94a3b8;
+    --mjj-border: #334155;
+    --mjj-accent: #10b981;
+    --mjj-accent-hover: #34d399;
+    --mjj-accent-soft: rgba(16, 185, 129, 0.16);
+    --mjj-shadow: 0 28px 70px -12px rgba(0, 0, 0, 0.65);
+}
+#mjj-cc-overlay.mjj-visible {
+    opacity: 1;
+}
+#mjj-cc-modal {
+    width: min(960px, 96vw);
+    height: min(720px, 90vh);
+    background: var(--mjj-bg);
+    color: var(--mjj-text);
+    border: 1px solid var(--mjj-border);
+    border-radius: 18px;
+    box-shadow: var(--mjj-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(10px) scale(0.985);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#mjj-cc-overlay.mjj-visible #mjj-cc-modal {
+    transform: translateY(0) scale(1);
+}
+.mjj-cc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--mjj-bg-card);
+    border-bottom: 1px solid var(--mjj-border);
+    flex-shrink: 0;
+}
+.mjj-cc-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+.mjj-cc-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+    color: #fff;
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.28);
+    flex-shrink: 0;
+}
+.mjj-cc-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.mjj-cc-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mjj-cc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--mjj-text);
+    line-height: 1.2;
+}
+.mjj-cc-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+}
+.mjj-cc-subtitle {
+    font-size: 12px;
+    color: var(--mjj-text-sub);
+}
+.mjj-cc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.mjj-cc-search-wrap {
+    position: relative;
+    width: 220px;
+}
+.mjj-cc-search-input {
+    width: 100%;
+    height: 34px;
+    padding: 0 28px 0 32px;
+    border-radius: 9px;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text);
+    font-size: 12.5px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+}
+.mjj-cc-search-input:focus {
+    border-color: var(--mjj-accent);
+    box-shadow: 0 0 0 3px var(--mjj-accent-soft);
+}
+.mjj-cc-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--mjj-text-sub);
+    pointer-events: none;
+}
+.mjj-cc-save-pill {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text-sub);
+    border: 1px solid var(--mjj-border);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.mjj-cc-save-pill.is-saved {
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.mjj-cc-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text-sub);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+.mjj-cc-close:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+}
+.mjj-cc-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+.mjj-cc-sidebar {
+    width: 210px;
+    background: var(--mjj-bg-sub);
+    border-right: 1px solid var(--mjj-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px 10px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+.mjj-cc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mjj-cc-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--mjj-text-sub);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.14s ease;
+}
+.mjj-cc-nav-btn:hover {
+    background: var(--mjj-bg-hover);
+    color: var(--mjj-text);
+}
+.mjj-cc-nav-btn.is-active {
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+}
+.mjj-cc-nav-count {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--mjj-bg-card);
+    color: var(--mjj-text-sub);
+    border: 1px solid var(--mjj-border);
+}
+.mjj-cc-nav-btn.is-active .mjj-cc-nav-count {
+    background: var(--mjj-accent);
+    color: #fff;
+    border-color: var(--mjj-accent);
+}
+.mjj-cc-sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--mjj-border);
+}
+.mjj-cc-side-action {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-card);
+    color: var(--mjj-text);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.14s ease;
+}
+.mjj-cc-side-action:hover {
+    border-color: var(--mjj-accent);
+    color: var(--mjj-accent);
+}
+.mjj-cc-content {
+    flex: 1;
+    padding: 18px 22px 28px;
+    overflow-y: auto;
+    background: var(--mjj-bg);
+}
+.mjj-cc-pane {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+}
+.mjj-cc-pane.is-active {
+    display: flex;
+}
+.mjj-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+.mjj-stat-card {
+    background: var(--mjj-bg-card);
+    border: 1px solid var(--mjj-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mjj-stat-label {
+    font-size: 11.5px;
+    color: var(--mjj-text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.mjj-stat-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--mjj-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mjj-stat-sub {
+    font-size: 11px;
+    color: var(--mjj-text-sub);
+}
+.mjj-suite-card {
+    background: var(--mjj-bg-card);
+    border: 1px solid var(--mjj-border);
+    border-radius: 14px;
+    padding: 15px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.mjj-suite-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.mjj-suite-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--mjj-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mjj-suite-desc {
+    font-size: 12.5px;
+    color: var(--mjj-text-sub);
+    line-height: 1.55;
+}
+.mjj-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.mjj-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.mjj-btn:hover {
+    border-color: var(--mjj-accent);
+    color: var(--mjj-accent);
+    background: var(--mjj-accent-soft);
+}
+.mjj-btn.is-primary {
+    background: var(--mjj-accent);
+    border-color: var(--mjj-accent);
+    color: #fff;
+}
+.mjj-btn.is-primary:hover {
+    background: var(--mjj-accent-hover);
+    border-color: var(--mjj-accent-hover);
+    color: #fff;
+}
+.mjj-card {
+    background: var(--mjj-bg-card);
+    border: 1px solid var(--mjj-border);
+    border-radius: 13px;
+    overflow: hidden;
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+.mjj-card:hover {
+    border-color: rgba(16, 185, 129, 0.45);
+}
+.mjj-card.is-disabled .mjj-card-body {
+    opacity: 0.48;
+    pointer-events: none;
+}
+.mjj-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--mjj-bg-sub);
+    border-bottom: 1px solid var(--mjj-border);
+}
+.mjj-card-header:last-child,
+.mjj-card-body:empty {
+    border-bottom: none;
+}
+.mjj-card-body:empty {
+    display: none;
+}
+.mjj-card-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mjj-card-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--mjj-text);
+}
+.mjj-card-key {
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--mjj-text-sub);
+    background: var(--mjj-bg-card);
+    padding: 1px 6px;
+    border-radius: 5px;
+    border: 1px solid var(--mjj-border);
+}
+.mjj-card-body {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 12px 16px;
+}
+.mjj-field {
+    grid-column: span 12;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 32px;
+}
+.mjj-field.col-6 {
+    grid-column: span 6;
+}
+.mjj-field.is-block {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+.mjj-field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mjj-text);
+}
+.mjj-field-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+/* Modern iOS Switch */
+.mjj-switch {
+    position: relative;
+    display: inline-flex;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.mjj-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+.mjj-switch-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--mjj-border);
+    border-radius: 999px;
+    transition: background 0.18s ease;
+}
+.mjj-switch-slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mjj-switch input:checked + .mjj-switch-slider {
+    background: var(--mjj-accent);
+}
+.mjj-switch input:checked + .mjj-switch-slider::before {
+    transform: translateX(18px);
+}
+/* Inputs & Selects */
+.mjj-input,
+.mjj-select,
+.mjj-textarea {
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12.5px;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+.mjj-input:focus,
+.mjj-select:focus,
+.mjj-textarea:focus {
+    border-color: var(--mjj-accent);
+}
+.mjj-input-num {
+    width: 96px;
+    text-align: right;
+}
+.mjj-textarea {
+    width: 100%;
+    min-height: 76px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+/* Segmented Radio Pills */
+.mjj-segmented {
+    display: inline-flex;
+    background: var(--mjj-bg-sub);
+    border: 1px solid var(--mjj-border);
+    border-radius: 9px;
+    padding: 2px;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+.mjj-seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--mjj-text-sub);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+}
+.mjj-seg-btn.is-active {
+    background: var(--mjj-accent);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+}
+/* Color Picker */
+.mjj-color-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.mjj-color-swatch {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--mjj-border);
+    border-radius: 7px;
+    cursor: pointer;
+    background: transparent;
+}
+.mjj-color-text {
+    width: 125px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+}
+@media (max-width: 768px) {
+    #mjj-cc-modal {
+        width: 100vw;
+        height: 94vh;
+        border-radius: 14px;
+    }
+    .mjj-cc-header {
+        flex-wrap: wrap;
+        padding: 12px 14px;
+    }
+    .mjj-cc-search-wrap {
+        width: 150px;
+    }
+    .mjj-cc-main {
+        flex-direction: column;
+    }
+    .mjj-cc-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--mjj-border);
+        padding: 8px 10px;
+        overflow-x: auto;
+    }
+    .mjj-cc-nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+    }
+    .mjj-cc-nav-btn {
+        white-space: nowrap;
+        width: auto;
+    }
+    .mjj-cc-sidebar-footer {
+        display: none;
+    }
+    .mjj-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .mjj-field.col-6 {
+        grid-column: span 12;
+    }
+}
+`;
 
     const el = (t, c, p, s) => { const e = document.createElement(t); if (c) e.className = c; if (s) e.style.cssText = s; if (p) p.appendChild(e); return e; };
     const BACKUP_SCHEMA_VERSION = 2;
@@ -1878,11 +2497,25 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `NSX_Pro_backup_${stamp}.json`;
+        a.download = `MJJ_backup_${stamp}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    const toHexColor = (val) => {
+        const s = String(val || "").trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+        if (/^#[0-9a-fA-F]{3}$/.test(s)) {
+            return "#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3];
+        }
+        const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+        if (m) {
+            const hex = (n) => Math.max(0, Math.min(255, Number(n) || 0)).toString(16).padStart(2, "0");
+            return `#${hex(m[1])}${hex(m[2])}${hex(m[3])}`;
+        }
+        return "#10b981";
     };
 
     const menus = {
@@ -1896,7 +2529,6 @@
             const uw = ctx.uw, code = ctx.site?.code || "ns";
             const ids = [];
             const txt = (m, v) => `${m.text}: ${m.states[v].s1} ${m.states[v].s2}`;
-
 
             const regMenus = () => {
                 ids.splice(0).forEach(i => GM_unregisterMenuCommand(i));
@@ -1931,7 +2563,7 @@
             };
 
             const reSign = () => {
-                if (!ctx.loggedIn || store.get(`sign_in.${code}.enabled`, true) === false) return ctx.ui.alert("提示", "签到已关闭");
+                if (!ctx.loggedIn || store.get(`sign_in.${code}.enabled`, true) === false) return ctx.ui.alert("提示", "签到已关闭或当前未登录");
                 store.set(`sign_in.${code}.last_date`, "1753/1/1");
                 location.reload();
             };
@@ -1940,7 +2572,7 @@
                 try {
                     const payload = await createBackupPayload();
                     downloadBackupFile(payload);
-                    ctx.ui.success?.("配置已导出");
+                    ctx.ui.success?.("MJJ 全量配置已导出");
                 } catch (e) {
                     env.error("Export config failed", e);
                     ctx.ui.error?.("导出失败，请稍后重试");
@@ -1950,7 +2582,7 @@
             const importConfig = () => {
                 const input = document.createElement("input");
                 input.type = "file";
-                input.accept = "application/json,.json";
+                input.accept = "application/json,.json,.txt";
                 input.style.display = "none";
                 input.onchange = () => {
                     const file = input.files?.[0];
@@ -1963,14 +2595,14 @@
                             const proceed = async () => {
                                 try {
                                     await applyBackupPayload(payload);
-                                    ctx.ui.success?.("配置已还原，页面即将刷新");
+                                    ctx.ui.success?.("配置已成功还原/迁移，页面即将刷新");
                                     setTimeout(() => location.reload(), 600);
                                 } catch (e) {
                                     env.error("Import config apply failed", e);
                                     ctx.ui.error?.("还原失败，请检查备份文件");
                                 }
                             };
-                            const msg = "将覆盖当前脚本设置、关键词、浏览历史、快捷回复和社交关系数据，是否继续？";
+                            const msg = "将导入并合并/覆盖设置、AI 画像配置、私信备份设置、关键词、历史记录和社交关系数据，是否继续？";
                             if (window.confirm(msg)) proceed();
                         } catch (e) {
                             env.error("Import config parse failed", e);
@@ -1987,25 +2619,6 @@
                 };
                 document.body.appendChild(input);
                 input.click();
-            };
-
-            const bindBackupTools = (root) => {
-                const exportBtn = root?.querySelector?.("[data-nsx-action='export-config']");
-                const importBtn = root?.querySelector?.("[data-nsx-action='import-config']");
-                if (exportBtn && !exportBtn.dataset.nsxBound) {
-                    exportBtn.dataset.nsxBound = "1";
-                    exportBtn.addEventListener("click", e => {
-                        e.preventDefault();
-                        exportConfig();
-                    });
-                }
-                if (importBtn && !importBtn.dataset.nsxBound) {
-                    importBtn.dataset.nsxBound = "1";
-                    importBtn.addEventListener("click", e => {
-                        e.preventDefault();
-                        importConfig();
-                    });
-                }
             };
 
             const switchNewTab = () => {
@@ -2026,15 +2639,50 @@
                 } catch { }
             };
 
-            const advSettings = () => {
-                if (!ctx.ui.layer || !window.layui) return;
-                addStyle("nsx-cfg", CSS$1);
+            const collectLiveStats = () => {
+                const countJsonKeys = (lsKey, subPath) => {
+                    try {
+                        const raw = localStorage.getItem(lsKey);
+                        if (!raw) return 0;
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) return parsed.length;
+                        if (subPath && Array.isArray(parsed?.[subPath])) return parsed[subPath].length;
+                        if (parsed && typeof parsed === "object") return Object.keys(parsed).length;
+                    } catch { }
+                    return 0;
+                };
+                const levelCacheCount = countJsonKeys("nsx_user_level_cache_v1");
+                const kwCount = countJsonKeys("nsx_advanced_keywords");
+                const friendCount = countJsonKeys("nsx_advanced_friends");
+                const blackCount = countJsonKeys("nsx_advanced_blacklist");
+                const histCount = countJsonKeys("nsx_browsing_history");
+                let aiText = "未配置 API";
+                let aiSub = "点击配置模型与 Key";
+                try {
+                    const aiSummary = window.__nsxRuntime?.getAiStatusSummary?.();
+                    if (aiSummary?.displayName) {
+                        aiText = aiSummary.displayName;
+                        aiSub = aiSummary.customEnabled ? "已启用自定义 Prompt" : "标准 AI 画像模式";
+                    } else {
+                        const rawAi = GM_getValue("ns-ai-profile-v2.8-settings", null);
+                        if (rawAi?.activeProvider) {
+                            const p = rawAi.providers?.[rawAi.activeProvider];
+                            aiText = `${rawAi.activeProvider} · ${p?.model || "默认"}`;
+                            aiSub = p?.apiKey ? "API Key 已就绪" : "待填写 API Key";
+                        }
+                    }
+                } catch { }
+                return { levelCacheCount, kwCount, friendCount, blackCount, histCount, aiText, aiSub };
+            };
 
-                // 获取所有模块的 cfg 和 meta
+            const advSettings = (initialTab = "overview", highlightCardKey = "") => {
+                addStyle("nsx-cfg", CSS$1);
+                const existing = document.getElementById("mjj-cc-overlay");
+                if (existing) existing.remove();
+
                 const defs = store.getDefaults(), metas = store.getMeta();
                 const ignore = new Set(["version", "debug", "ui"]);
 
-                // 建立 meta key 到 order 的映射关系
                 const metaToOrder = new Map();
                 modules.forEach(m => {
                     if (m.meta) {
@@ -2042,20 +2690,17 @@
                     }
                 });
 
-                // 获取所有设置条目并附加 order
                 const entries = Object.entries(metas)
                     .filter(([k]) => defs[k] && !ignore.has(k))
                     .map(([k, m]) => ({
                         key: k,
                         meta: m,
                         order: metaToOrder.get(k) || 999
-                    }));
-
-                // 核心：按照 order 从小到大排序
-                entries.sort((a, b) => a.order - b.order);
+                    }))
+                    .sort((a, b) => a.order - b.order);
 
                 const groups = {};
-                const groupOrder = []; // 记录分组出现的先后顺序
+                const groupOrder = [];
                 entries.forEach(e => {
                     const g = e.meta.group || "其他设置";
                     if (!groups[g]) {
@@ -2065,227 +2710,617 @@
                     groups[g].push(e);
                 });
 
-                const cont = document.createElement("div");
-                cont.className = "layui-row";
-                cont.style.cssText = "display:flex;height:100%";
-                const menuDiv = el("div", "layui-panel layui-col-xs3", cont);
-                menuDiv.id = "nsx-config-menu";
-                const menuList = el("ul", "layui-menu", menuDiv);
-                const wrapper = el("div", "layui-col-xs9", cont);
-                wrapper.id = "nsx-config-content";
+                const overlay = el("div", "", document.body);
+                overlay.id = "mjj-cc-overlay";
+                const modal = el("div", "", overlay);
+                modal.id = "mjj-cc-modal";
 
+                const closeModal = () => {
+                    overlay.classList.remove("mjj-visible");
+                    setTimeout(() => overlay.remove(), 180);
+                };
+
+                // Header
+                const header = el("div", "mjj-cc-header", modal);
+                const brand = el("div", "mjj-cc-brand", header);
+                const logo = el("div", "mjj-cc-logo", brand);
+                logo.textContent = "MJJ";
+                const titleWrap = el("div", "mjj-cc-title-wrap", brand);
+                const titleRow = el("div", "mjj-cc-title-row", titleWrap);
+                const titleEl = el("span", "mjj-cc-title", titleRow);
+                titleEl.textContent = "MJJ 控制中心";
+                const verBadge = el("span", "mjj-cc-badge", titleRow);
+                verBadge.textContent = `v${info.version || "1.2.0"}`;
+                const subEl = el("div", "mjj-cc-subtitle", titleWrap);
+                subEl.textContent = "NodeSeek & DeepFlood 全能增强 · AI 画像 · 私信备份";
+
+                const headerRight = el("div", "mjj-cc-header-right", header);
+                const searchWrap = el("div", "mjj-cc-search-wrap", headerRight);
+                const searchIcon = el("span", "mjj-cc-search-icon", searchWrap);
+                searchIcon.textContent = "🔍";
+                const searchInput = el("input", "mjj-cc-search-input", searchWrap);
+                searchInput.type = "search";
+                searchInput.placeholder = "搜索功能、模块或设置项...";
+
+                const savePill = el("span", "mjj-cc-save-pill", headerRight);
+                savePill.textContent = "⚡ 自动保存已就绪";
+                let saveTimer = null;
+                const flashSaved = (label = "✓ 已自动保存并生效") => {
+                    savePill.textContent = label;
+                    savePill.classList.add("is-saved");
+                    clearTimeout(saveTimer);
+                    saveTimer = setTimeout(() => {
+                        savePill.textContent = "⚡ 自动保存已就绪";
+                        savePill.classList.remove("is-saved");
+                    }, 1800);
+                };
+
+                const closeBtn = el("button", "mjj-cc-close", headerRight);
+                closeBtn.type = "button";
+                closeBtn.title = "关闭 (Esc)";
+                closeBtn.textContent = "✕";
+                closeBtn.addEventListener("click", closeModal);
+
+                // Main Layout
+                const main = el("div", "mjj-cc-main", modal);
+                const sidebar = el("div", "mjj-cc-sidebar", main);
+                const nav = el("div", "mjj-cc-nav", sidebar);
+                const content = el("div", "mjj-cc-content", main);
+
+                const panes = new Map();
+                const navButtons = new Map();
+
+                const switchTab = (tabId) => {
+                    searchInput.value = "";
+                    panes.forEach((pane, id) => {
+                        pane.classList.toggle("is-active", id === tabId);
+                        pane.querySelectorAll(".mjj-card").forEach(c => { c.style.display = ""; });
+                    });
+                    navButtons.forEach((btn, id) => {
+                        btn.classList.toggle("is-active", id === tabId);
+                    });
+                    content.scrollTop = 0;
+                };
+
+                const addNavTab = (tabId, label, badgeText) => {
+                    const btn = el("button", "mjj-cc-nav-btn", nav);
+                    btn.type = "button";
+                    const span = el("span", "", btn);
+                    span.textContent = label;
+                    if (badgeText !== undefined && badgeText !== "") {
+                        const b = el("span", "mjj-cc-nav-count", btn);
+                        b.textContent = String(badgeText);
+                    }
+                    btn.addEventListener("click", () => switchTab(tabId));
+                    navButtons.set(tabId, btn);
+                    const pane = el("div", "mjj-cc-pane", content);
+                    pane.dataset.tabId = tabId;
+                    panes.set(tabId, pane);
+                    return pane;
+                };
+
+                const commitValue = (path, val) => {
+                    const oldV = store.get(path);
+                    const o = typeof oldV === "object" ? JSON.stringify(oldV) : String(oldV);
+                    const n = typeof val === "object" ? JSON.stringify(val) : String(val);
+                    store.set(path, val);
+                    if (o !== n) {
+                        applyRuntimeSettings(ctx, [path]);
+                        regMenus();
+                        flashSaved();
+                    }
+                };
+
+                const createSwitchEl = (checked, onChange) => {
+                    const label = el("label", "mjj-switch");
+                    const inp = el("input", "", label);
+                    inp.type = "checkbox";
+                    inp.checked = !!checked;
+                    el("span", "mjj-switch-slider", label);
+                    inp.addEventListener("change", () => onChange(inp.checked, inp));
+                    return { wrap: label, input: inp };
+                };
+
+                // 1. Overview Pane
+                const overviewPane = addNavTab("overview", "🏠 套件总览", "3合1");
+                const stats = collectLiveStats();
+                const statsGrid = el("div", "mjj-stats-grid", overviewPane);
+
+                const makeStatCard = (title, valText, subText) => {
+                    const sc = el("div", "mjj-stat-card", statsGrid);
+                    const lb = el("div", "mjj-stat-label", sc);
+                    lb.textContent = title;
+                    const vl = el("div", "mjj-stat-val", sc);
+                    vl.textContent = valText;
+                    const sb = el("div", "mjj-stat-sub", sc);
+                    sb.textContent = subText;
+                    return { card: sc, valEl: vl, subEl: sb };
+                };
+
+                const levelStat = makeStatCard("🛡️ 等级缓存库", `${stats.levelCacheCount} 人`, "用于低等级发帖模糊过滤");
+                makeStatCard("🚫 过滤与黑名单", `${stats.kwCount} 词 / ${stats.blackCount} 人`, "支持标题正则与用户拉黑");
+                makeStatCard("🤝 好友与足迹", `${stats.friendCount} 友 / ${stats.histCount} 帖`, "自动高亮好友与记录浏览");
+                makeStatCard("🤖 AI 画像引擎", stats.aiText, stats.aiSub);
+
+                // Suite 1: AI Profile
+                const aiSuite = el("div", "mjj-suite-card", overviewPane);
+                const aiTop = el("div", "mjj-suite-top", aiSuite);
+                const aiTitle = el("div", "mjj-suite-title", aiTop);
+                aiTitle.innerHTML = `<span>🤖 用户 AI 画像与深度交易分析</span><span class="mjj-cc-badge">v2.8.1</span>`;
+                const aiMasterSw = createSwitchEl(store.get("ai_profile_ext.enabled", true), (on) => {
+                    commitValue("ai_profile_ext.enabled", on);
+                });
+                aiTop.appendChild(aiMasterSw.wrap);
+                const aiDesc = el("div", "mjj-suite-desc", aiSuite);
+                aiDesc.textContent = "在帖子楼层与用户主页注入「AI 画像」与「交易深挖」按钮，支持 DeepSeek / OpenAI / 第三方兼容接口、自定义 Prompt 预设、账号悬停预览及多图床分享卡片。";
+                const aiBtns = el("div", "mjj-btn-row", aiSuite);
+                const openAiBtn = el("button", "mjj-btn is-primary", aiBtns);
+                openAiBtn.type = "button";
+                openAiBtn.textContent = "⚙️ 打开 AI 接口与 Prompt 详细设置";
+                openAiBtn.addEventListener("click", () => {
+                    closeModal();
+                    if (!window.__nsxRuntime?.openAiSettings) {
+                        try { modules.get("aiProfileExt")?.init?.(ctx); } catch { }
+                    }
+                    setTimeout(() => window.__nsxRuntime?.openAiSettings?.(), 60);
+                });
+
+                // Suite 2: Chat Backup
+                const chatSuite = el("div", "mjj-suite-card", overviewPane);
+                const chatTop = el("div", "mjj-suite-top", chatSuite);
+                const chatTitle = el("div", "mjj-suite-title", chatTop);
+                chatTitle.innerHTML = `<span>💬 私信记录本地缓存与云端备份</span><span class="mjj-cc-badge">v2.0.0</span>`;
+                const chatMasterSw = createSwitchEl(store.get("chat_backup_ext.enabled", true), (on) => {
+                    commitValue("chat_backup_ext.enabled", on);
+                });
+                chatTop.appendChild(chatMasterSw.wrap);
+                const chatDesc = el("div", "mjj-suite-desc", chatSuite);
+                chatDesc.textContent = "自动将 NodeSeek / DeepFlood 私信会话缓存至本地 IndexedDB，并支持 WebDAV 与 Cloudflare R2 双通道加密备份与跨设备恢复。";
+                const chatBtns = el("div", "mjj-btn-row", chatSuite);
+
+                const ensureChatReady = () => {
+                    if (!window.__nsxRuntime?.openChatBackupSettings) {
+                        try { modules.get("chatBackupExt")?.init?.(ctx); } catch { }
+                    }
+                };
+
+                const openChatCfgBtn = el("button", "mjj-btn is-primary", chatBtns);
+                openChatCfgBtn.type = "button";
+                openChatCfgBtn.textContent = "☁️ WebDAV / R2 备份设置";
+                openChatCfgBtn.addEventListener("click", () => {
+                    closeModal();
+                    ensureChatReady();
+                    setTimeout(() => {
+                        if (window.__nsxRuntime?.openChatBackupSettings) window.__nsxRuntime.openChatBackupSettings();
+                        else ctx.ui.alert?.("提示", "请先登录论坛账号后再配置私信备份");
+                    }, 120);
+                });
+
+                const openChatHistBtn = el("button", "mjj-btn", chatBtns);
+                openChatHistBtn.type = "button";
+                openChatHistBtn.textContent = "📜 查看历史私信记录";
+                openChatHistBtn.addEventListener("click", () => {
+                    closeModal();
+                    ensureChatReady();
+                    setTimeout(() => {
+                        if (window.__nsxRuntime?.openChatHistory) window.__nsxRuntime.openChatHistory();
+                        else location.href = "/notification#/message?mode=list";
+                    }, 120);
+                });
+
+                const runBackupNowBtn = el("button", "mjj-btn", chatBtns);
+                runBackupNowBtn.type = "button";
+                runBackupNowBtn.textContent = "⚡ 立即执行云备份";
+                runBackupNowBtn.addEventListener("click", () => {
+                    ensureChatReady();
+                    setTimeout(() => {
+                        if (window.__nsxRuntime?.runChatBackupNow) window.__nsxRuntime.runChatBackupNow();
+                        else ctx.ui.alert?.("提示", "请先配置 WebDAV 或 R2 备份服务");
+                    }, 120);
+                });
+
+                // Suite 3: Quick Drawers & Low Level Filter Shortcut
+                const drawerSuite = el("div", "mjj-suite-card", overviewPane);
+                const drawerTop = el("div", "mjj-suite-top", drawerSuite);
+                const drawerTitle = el("div", "mjj-suite-title", drawerTop);
+                drawerTitle.innerHTML = `<span>🗂️ 快捷数据面板与高频功能直达</span>`;
+                const drawerDesc = el("div", "mjj-suite-desc", drawerSuite);
+                drawerDesc.textContent = "快速呼出顶部栏悬浮管理抽屉（关键词屏蔽、好友/黑名单备注、浏览足迹），或直达低等级发帖模糊过滤配置。";
+                const drawerBtns = el("div", "mjj-btn-row", drawerSuite);
+
+                const triggerTopBarIcon = (selector, fallbackTab) => {
+                    const btn = document.querySelector(selector);
+                    if (btn) {
+                        closeModal();
+                        setTimeout(() => btn.click(), 60);
+                    } else if (fallbackTab) {
+                        switchTab(fallbackTab);
+                    }
+                };
+
+                const btnKw = el("button", "mjj-btn", drawerBtns);
+                btnKw.type = "button";
+                btnKw.textContent = "🔍 关键字过滤管理";
+                btnKw.addEventListener("click", () => triggerTopBarIcon("#nsx-icon-group .filter-dropdown-on", "🚫 过滤设置"));
+
+                const btnRel = el("button", "mjj-btn", drawerBtns);
+                btnRel.type = "button";
+                btnRel.textContent = "🤝 好友与黑名单管理";
+                btnRel.addEventListener("click", () => triggerTopBarIcon("#nsx-icon-group .relation-dropdown-on", "🤝 社交关系"));
+
+                const btnHist = el("button", "mjj-btn", drawerBtns);
+                btnHist.type = "button";
+                btnHist.textContent = "🕘 浏览历史与最近关闭";
+                btnHist.addEventListener("click", () => triggerTopBarIcon("#nsx-icon-group .history-dropdown-on", "🧭 辅助工具"));
+
+                const btnLowLv = el("button", "mjj-btn", drawerBtns);
+                btnLowLv.type = "button";
+                btnLowLv.textContent = "🛡️ 低等级账号模糊设置";
+                btnLowLv.addEventListener("click", () => {
+                    switchTab("🚫 过滤设置");
+                    const card = content.querySelector("[data-card-key='block_low_level']");
+                    if (card) {
+                        card.scrollIntoView({ behavior: "smooth", block: "center" });
+                        card.style.borderColor = "var(--mjj-accent)";
+                    }
+                });
+
+                // 2. Dynamic Category Panes
                 const isObj = v => v && typeof v === "object" && !Array.isArray(v);
                 const inferType = (v, m) => m?.type || (Array.isArray(v) ? "TEXTAREA" : typeof v === "boolean" ? "SWITCH" : typeof v === "number" ? "NUMBER" : "TEXT");
                 const inferVT = (v, m) => m?.valueType || (Array.isArray(v) ? "array" : typeof v === "number" ? "number" : typeof v === "boolean" ? "boolean" : "string");
 
-                const makeField = (f, path, val, defaultCol = 12) => {
+                const makeFieldEl = (f, path, val, defaultCol = 12) => {
                     const col = f.col ?? defaultCol;
-                    const w = el("div", `layui-col-md${col}`), item = el("div", "layui-form-item", w);
-                    const lbl = el("label", "layui-form-label", item); lbl.textContent = f.label || f.key;
-                    const blk = el("div", "layui-input-block", item);
+                    const isBlock = f.type === "TEXTAREA";
+                    const field = el("div", `mjj-field${col === 6 ? " col-6" : ""}${isBlock ? " is-block" : ""}`);
+                    const lbl = el("div", "mjj-field-label", field);
+                    lbl.textContent = f.label || f.key;
+                    const ctrl = el("div", "mjj-field-ctrl", field);
 
                     if (f.type === "SWITCH") {
-                        item.style.cssText = "display:flex;align-items:center;margin-bottom:15px;";
-                        lbl.style.cssText = "float:none;display:inline-block;padding:0 15px 0 0;width:auto;text-align:left;line-height:normal;";
-                        blk.style.cssText = "margin-left:0;min-height:auto;";
-                        let inp = el("input", "", blk); inp.type = "checkbox"; if (val) inp.setAttribute("checked", ""); inp.setAttribute("lay-skin", "switch"); inp.setAttribute("lay-text", "开启|关闭"); inp.name = path;
-                    }
-                    else if (f.type === "TEXTAREA") { let inp = el("textarea", "layui-textarea", blk); inp.setAttribute("placeholder", f.placeholder || ""); inp.textContent = Array.isArray(val) ? val.join("\n") : (val ?? ""); inp.name = path; }
-                    else if (f.type === "RADIO" && f.options) {
+                        const sw = createSwitchEl(val, (checked) => commitValue(path, checked));
+                        ctrl.appendChild(sw.wrap);
+                    } else if (f.type === "RADIO" && Array.isArray(f.options)) {
+                        const seg = el("div", "mjj-segmented", ctrl);
+                        const btns = [];
                         f.options.forEach(opt => {
-                            const r = el("input", "", blk); r.type = "radio"; r.name = path; r.setAttribute("value", opt.value);
-                            r.dataset.valueType = f.valueType || "";
-                            if (String(val) === String(opt.value)) r.setAttribute("checked", "");
-                            r.setAttribute("title", opt.text);
+                            const b = el("button", `mjj-seg-btn${String(val) === String(opt.value) ? " is-active" : ""}`, seg);
+                            b.type = "button";
+                            b.textContent = opt.text;
+                            b.addEventListener("click", () => {
+                                btns.forEach(x => x.classList.remove("is-active"));
+                                b.classList.add("is-active");
+                                const nextVal = f.valueType === "number" ? Number(opt.value) : opt.value;
+                                commitValue(path, nextVal);
+                            });
+                            btns.push(b);
                         });
-                    }
-                    else if (f.type === "SELECT" && f.options) {
-                        const sel = el("select", "", blk); sel.name = path;
-                        sel.dataset.valueType = f.valueType || "";
+                    } else if (f.type === "SELECT" && f.options) {
+                        const sel = el("select", "mjj-select", ctrl);
                         Object.entries(f.options).forEach(([k, v]) => {
                             const opt = el("option", "", sel);
-                            opt.value = k; opt.textContent = v;
-                            if (String(val) === String(k)) opt.setAttribute("selected", "selected");
+                            opt.value = k;
+                            opt.textContent = v;
+                            if (String(val) === String(k)) opt.selected = true;
+                        });
+                        sel.addEventListener("change", () => {
+                            const nextVal = f.valueType === "number" ? Number(sel.value) : sel.value;
+                            commitValue(path, nextVal);
+                        });
+                    } else if (f.type === "COLOR") {
+                        const cWrap = el("div", "mjj-color-wrap", ctrl);
+                        const swatch = el("input", "mjj-color-swatch", cWrap);
+                        swatch.type = "color";
+                        swatch.value = toHexColor(val || f.defaultVal);
+                        const txtInp = el("input", "mjj-input mjj-color-text", cWrap);
+                        txtInp.type = "text";
+                        txtInp.value = val ?? f.defaultVal ?? "";
+                        const resetBtn = el("button", "mjj-btn", cWrap);
+                        resetBtn.type = "button";
+                        resetBtn.style.padding = "4px 8px";
+                        resetBtn.style.fontSize = "11px";
+                        resetBtn.textContent = "重置";
+
+                        swatch.addEventListener("input", () => {
+                            txtInp.value = swatch.value;
+                            commitValue(path, swatch.value);
+                        });
+                        txtInp.addEventListener("change", () => {
+                            const final = txtInp.value.trim() || f.defaultVal || "";
+                            txtInp.value = final;
+                            swatch.value = toHexColor(final);
+                            commitValue(path, final);
+                        });
+                        resetBtn.addEventListener("click", () => {
+                            const def = f.defaultVal || "";
+                            txtInp.value = def;
+                            swatch.value = toHexColor(def);
+                            commitValue(path, def);
+                        });
+                    } else if (f.type === "TEXTAREA") {
+                        const ta = el("textarea", "mjj-textarea", ctrl);
+                        ta.placeholder = f.placeholder || "";
+                        ta.value = Array.isArray(val) ? val.join("\n") : (val ?? "");
+                        ta.addEventListener("change", () => {
+                            const nextVal = f.valueType === "array"
+                                ? ta.value.split("\n").map(s => s.trim()).filter(Boolean)
+                                : ta.value;
+                            commitValue(path, nextVal);
+                        });
+                    } else {
+                        const inp = el("input", `mjj-input${f.type === "NUMBER" ? " mjj-input-num" : ""}`, ctrl);
+                        inp.type = f.type === "NUMBER" ? "number" : "text";
+                        inp.value = val ?? "";
+                        inp.addEventListener("change", () => {
+                            let nextVal = inp.value;
+                            if (f.type === "NUMBER" || f.valueType === "number") {
+                                const n = Number(inp.value);
+                                nextVal = Number.isFinite(n) ? n : 0;
+                            }
+                            commitValue(path, nextVal);
                         });
                     }
-                    else if (f.type === "COLOR") {
-                        const inpWrap = el("div", "layui-input-inline", blk); inpWrap.style.width = "100px";
-                        let inp = el("input", "layui-input", inpWrap);
-                        inp.type = "text";
-                        inp.setAttribute("name", path);
-                        inp.setAttribute("value", val ?? "");
-                        inp.readOnly = true;
-                        inp.style.cssText = `background:${val || "#fff"};cursor:pointer;color:transparent`;
-                        const cpWrap = el("div", "layui-inline", blk); cpWrap.style.left = "-11px";
-                        const wrap = el("div", "", cpWrap);
-                        wrap.setAttribute("data-color-path", path);
-                        wrap.setAttribute("data-color-val", val ?? "");
-                        wrap.setAttribute("data-color-inp", path);
-                        wrap.setAttribute("data-color-default", f.defaultVal ?? "");
-                    }
-                    else {
-                        let inp = el("input", "layui-input", blk);
-                        inp.type = f.type === "NUMBER" ? "number" : "text";
-                        inp.setAttribute("value", val ?? "");
-                        inp.setAttribute("name", path);
-                        inp.dataset.valueType = f.valueType || "";
-                    }
-
-                    const firstInp = w.querySelector("input, textarea");
-                    if (firstInp && !firstInp.dataset.valueType) firstInp.dataset.valueType = f.valueType || "";
-                    return w;
+                    return field;
                 };
 
-                const makeCard = (entry, siteCode) => {
+                const makeCardEl = (entry, siteCode) => {
                     const m = entry.meta || {};
                     let base = entry.key, cfg = defs[entry.key];
-                    if (entry.key === "sign_in") { cfg = defs.sign_in?.[siteCode] || defs.sign_in?.ns || {}; base = `sign_in.${siteCode}`; }
-                    if (!isObj(cfg)) return null;
-                    const card = el("div", "layui-card layui-form nsx-config-card");
-                    card.setAttribute("lay-filter", `nsx-${entry.key}`);
-                    const hdr = el("div", "layui-card-header", card); hdr.textContent = m.label || entry.key;
-                    if (typeof cfg.enabled === "boolean") {
-                        const cbW = el("div", "header-checkbox", hdr), cb = el("input", "", cbW);
-                        cb.type = "checkbox"; cb.name = `${base}.enabled`; if (store.get(`${base}.enabled`, cfg.enabled)) cb.setAttribute("checked", "");
-                        cb.setAttribute("lay-skin", "switch"); cb.setAttribute("lay-text", "开启|关闭");
-                        cb.setAttribute("lay-filter", "nsx-main-switch");
+                    if (entry.key === "sign_in") {
+                        cfg = defs.sign_in?.[siteCode] || defs.sign_in?.ns || {};
+                        base = `sign_in.${siteCode}`;
                     }
-                    const body = el("div", "layui-card-body layui-row layui-col-space10", card);
+                    if (!isObj(cfg)) return null;
+
+                    const isEnabled = typeof cfg.enabled === "boolean" ? !!store.get(`${base}.enabled`, cfg.enabled) : true;
+                    const card = el("div", `mjj-card${!isEnabled ? " is-disabled" : ""}`);
+                    card.dataset.cardKey = entry.key;
+
+                    const hdr = el("div", "mjj-card-header", card);
+                    const tWrap = el("div", "mjj-card-title-wrap", hdr);
+                    const tEl = el("span", "mjj-card-title", tWrap);
+                    tEl.textContent = m.label || entry.key;
+                    const kEl = el("span", "mjj-card-key", tWrap);
+                    kEl.textContent = entry.key;
+
+                    if (typeof cfg.enabled === "boolean") {
+                        const sw = createSwitchEl(isEnabled, (checked) => {
+                            card.classList.toggle("is-disabled", !checked);
+                            commitValue(`${base}.enabled`, checked);
+                        });
+                        hdr.appendChild(sw.wrap);
+                    }
+
+                    const body = el("div", "mjj-card-body", card);
                     const fields = m.fields || {}, hidden = new Set(m.hidden || []);
                     const cols = m.cols || 1, defaultCol = Math.floor(12 / cols);
+
                     Object.keys(cfg).filter(k => k !== "enabled" && !isObj(cfg[k]) && !hidden.has(k)).forEach(k => {
                         const fm = fields[k] || {};
-                        const f = { key: k, label: fm.label || k, type: inferType(cfg[k], fm), options: fm.options, placeholder: fm.placeholder, valueType: inferVT(cfg[k], fm), col: fm.col, defaultVal: cfg[k] };
+                        const f = {
+                            key: k,
+                            label: fm.label || k,
+                            type: inferType(cfg[k], fm),
+                            options: fm.options,
+                            placeholder: fm.placeholder,
+                            valueType: inferVT(cfg[k], fm),
+                            col: fm.col,
+                            defaultVal: cfg[k]
+                        };
                         let cur = store.get(`${base}.${k}`, cfg[k]);
-                        // 处理旧版本 hide -> official 的映射
-                        if (k === 'blacklist_mode' && cur === 'hide') cur = 'official';
-
-                        const fe = makeField(f, `${base}.${k}`, cur, defaultCol);
+                        if (k === "blacklist_mode" && cur === "hide") cur = "official";
+                        const fe = makeFieldEl(f, `${base}.${k}`, cur, defaultCol);
                         if (fe) body.appendChild(fe);
                     });
+
+                    // Extra quick action buttons for specific cards
+                    if (entry.key === "ai_profile_ext") {
+                        const row = el("div", "mjj-field", body);
+                        const lbl = el("div", "mjj-field-label", row);
+                        lbl.textContent = "AI 模型、API Key 与 Prompt 预设";
+                        const btn = el("button", "mjj-btn is-primary", row);
+                        btn.type = "button";
+                        btn.textContent = "⚙️ 打开 AI 详细设置";
+                        btn.addEventListener("click", () => {
+                            closeModal();
+                            setTimeout(() => window.__nsxRuntime?.openAiSettings?.(), 60);
+                        });
+                    } else if (entry.key === "chat_backup_ext") {
+                        const row = el("div", "mjj-field", body);
+                        const lbl = el("div", "mjj-field-label", row);
+                        lbl.textContent = "WebDAV / R2 备份与私信历史";
+                        const bWrap = el("div", "mjj-btn-row", row);
+                        const b1 = el("button", "mjj-btn is-primary", bWrap);
+                        b1.type = "button";
+                        b1.textContent = "☁️ 备份设置";
+                        b1.addEventListener("click", () => {
+                            closeModal();
+                            ensureChatReady();
+                            setTimeout(() => window.__nsxRuntime?.openChatBackupSettings?.(), 100);
+                        });
+                        const b2 = el("button", "mjj-btn", bWrap);
+                        b2.type = "button";
+                        b2.textContent = "📜 历史记录";
+                        b2.addEventListener("click", () => {
+                            closeModal();
+                            ensureChatReady();
+                            setTimeout(() => window.__nsxRuntime?.openChatHistory?.(), 100);
+                        });
+                    }
+
+                    card.dataset.searchText = `${m.label || ""} ${entry.key} ${body.textContent || ""}`.toLowerCase();
                     return card;
                 };
 
-                // 按照排好序的分组进行渲染
-                groupOrder.forEach((g, i) => {
+                groupOrder.forEach((g) => {
                     const list = groups[g];
-                    const fs = el("fieldset", "layui-elem-field layui-field-title", wrapper); fs.id = `group-${i}`;
-                    const lg = el("legend", "", fs); lg.textContent = g;
-                    const fd = el("div", "layui-form", wrapper);
-                    list.forEach(e => { const c = makeCard(e, code); if (c) fd.appendChild(c); });
-                    const mi = el("li", "", menuList); if (i === 0) mi.classList.add("layui-menu-item-checked");
-                    const mb = el("div", "layui-menu-body-title", mi), a = el("a", "", mb); a.href = `#group-${i}`; a.textContent = g;
+                    const pane = addNavTab(g, g, list.length);
+                    list.forEach(e => {
+                        const c = makeCardEl(e, code);
+                        if (c) pane.appendChild(c);
+                    });
                 });
 
-                const backupIdx = groupOrder.length;
-                const backupFs = el("fieldset", "layui-elem-field layui-field-title", wrapper); backupFs.id = `group-${backupIdx}`;
-                const backupLg = el("legend", "", backupFs); backupLg.textContent = "配置备份";
-                const backupWrap = el("div", "layui-form", wrapper);
-                const backupCard = el("div", "layui-card layui-form nsx-config-card", backupWrap);
-                const backupHdr = el("div", "layui-card-header", backupCard); backupHdr.textContent = "导出与还原";
-                const backupBody = el("div", "layui-card-body", backupCard);
-                backupBody.innerHTML = `<div class="nsx-config-tools"><button type="button" class="layui-btn layui-btn-normal" data-nsx-action="export-config">导出配置</button><button type="button" class="layui-btn layui-btn-primary" data-nsx-action="import-config">还原配置</button></div><div class="nsx-config-tools-tip">会备份设置面板中的开关、颜色、数值等配置，以及关键词、历史记录、快捷回复、好友和黑名单等本地数据。</div>`;
-                const backupMi = el("li", "", menuList);
-                const backupMb = el("div", "layui-menu-body-title", backupMi), backupA = el("a", "", backupMb);
-                backupA.href = `#group-${backupIdx}`;
-                backupA.textContent = "配置备份";
+                // 3. Backup & Migration Pane
+                const backupPane = addNavTab("backup", "📦 备份与迁移", "4格式");
+                const bkSuite = el("div", "mjj-suite-card", backupPane);
+                const bkTitle = el("div", "mjj-suite-title", bkSuite);
+                bkTitle.textContent = "📦 全量配置备份与多格式迁移中心";
+                const bkDesc = el("div", "mjj-suite-desc", bkSuite);
+                bkDesc.innerHTML = `导出文件将完整包含：<br>
+• <b>MJJ 基础与视觉设置</b>（全部开关、等级过滤阈值、配色、快捷键等）<br>
+• <b>AI 画像全量配置</b>（DeepSeek / OpenAI API Key、模型参数、自定义 Prompt 预设、图床 Token）<br>
+• <b>私信云备份配置</b>（WebDAV / Cloudflare R2 服务器地址、凭证与保留策略）<br>
+• <b>本地持久数据</b>（屏蔽关键词、好友名单与备注、黑名单、浏览历史记录、快捷回复）`;
+                const bkBtns = el("div", "mjj-btn-row", bkSuite);
+                const expBtn = el("button", "mjj-btn is-primary", bkBtns);
+                expBtn.type = "button";
+                expBtn.textContent = "📦 导出 MJJ 全量备份 (.json)";
+                expBtn.addEventListener("click", exportConfig);
 
-                // 底部提示
-                const endFs = el("fieldset", "layui-elem-field layui-field-title", wrapper, "text-align:center");
-                const endLg = el("legend", "", endFs, "font-size:0.8em;opacity:0.5");
-                endLg.textContent = "到底了";
+                const impBtn = el("button", "mjj-btn", bkBtns);
+                impBtn.type = "button";
+                impBtn.textContent = "♻️ 导入 / 迁移旧脚本配置 (.json)";
+                impBtn.addEventListener("click", importConfig);
 
-                const w = window.layui.device().mobile ? "100%" : "620px";
-                ctx.ui.layer.open({
-                    type: 1, offset: "r", anim: "slideLeft", area: [w, "100%"], scrollbar: false, shade: 0.1, shadeClose: false,
-                    btn: ["保存设置", "取消"], btnAlign: "r", title: "MJJ 设置", id: "setting-layer-direction-r", content: cont.outerHTML,
-                    success: ly => {
-                        const r = ly?.[0] || ly;
-                        try { window.layui.form?.render(); } catch { }
-                        bindBackupTools(r);
-                        // 滚动同步：右侧滚动时高亮左侧菜单
-                        const content = r?.querySelector?.("#nsx-config-content");
-                        const menu = r?.querySelector?.("#nsx-config-menu");
-                        if (content && menu) {
-                            const items = menu.querySelectorAll("li");
-                            content.addEventListener("scroll", () => {
-                                const groups = content.querySelectorAll("fieldset[id^='group-']");
-                                let activeIdx = 0;
-                                groups.forEach((g, i) => { if (g.offsetTop - content.scrollTop <= 50) activeIdx = i; });
-                                items.forEach((li, i) => li.classList.toggle("layui-menu-item-checked", i === activeIdx));
-                            }, { passive: true });
+                const compatSuite = el("div", "mjj-suite-card", backupPane);
+                const compatTitle = el("div", "mjj-suite-title", compatSuite);
+                compatTitle.textContent = "✅ 支持直接导入的 4 种备份格式";
+                const compatDesc = el("div", "mjj-suite-desc", compatSuite);
+                compatDesc.innerHTML = `1. <b>MJJ / Nodeseek Pro 标准备份文件</b> (<code>MJJ_backup_*.json</code> / <code>NSX_Pro_backup_*.json</code>)<br>
+2. <b>Tampermonkey 全量导出压缩包内文件</b>（油猴面板 → 实用工具 → 导出文件生成的 JSON，自动识别并提取旧脚本配置）<br>
+3. <b>NodeSeek AI 画像配置 JSON</b>（旧脚本存储页导出的 <code>ns-ai-profile-v2.8-settings</code> JSON）<br>
+4. <b>NS-DF 私信备份云端 JSON</b>（WebDAV / R2 上的 <code>nodeseek_chat_backup_*.json</code>，自动恢复服务器配置）`;
+
+                const cacheSuite = el("div", "mjj-suite-card", backupPane);
+                const cacheTitle = el("div", "mjj-suite-title", cacheSuite);
+                cacheTitle.textContent = "🧹 缓存维护与重置";
+                const cacheDesc = el("div", "mjj-suite-desc", cacheSuite);
+                cacheDesc.textContent = "清理本地缓存的用户等级数据（下次浏览列表时将重新按需拉取），或将基础开关重置为初始状态。";
+                const cacheBtns = el("div", "mjj-btn-row", cacheSuite);
+
+                const clearLvBtn = el("button", "mjj-btn", cacheBtns);
+                clearLvBtn.type = "button";
+                clearLvBtn.textContent = `🧹 清空用户等级缓存 (${stats.levelCacheCount} 条)`;
+                clearLvBtn.addEventListener("click", () => {
+                    localStorage.removeItem("nsx_user_level_cache_v1");
+                    levelStat.valEl.textContent = "0 人";
+                    clearLvBtn.textContent = "🧹 清空用户等级缓存 (0 条)";
+                    window.__nsxRuntime?.reapplyLowLevelFilter?.();
+                    flashSaved("✓ 等级缓存已清空");
+                });
+
+                const resetDefBtn = el("button", "mjj-btn", cacheBtns);
+                resetDefBtn.type = "button";
+                resetDefBtn.textContent = "🔄 恢复默认基础设置";
+                resetDefBtn.addEventListener("click", () => {
+                    if (!window.confirm("确定要将 MJJ 基础功能开关恢复为默认设置吗？（不会删除关键词、好友/黑名单及 AI Key）")) return;
+                    cfgCache = null;
+                    GM_setValue("settings", cloneData(store.getDefaults()));
+                    flashSaved("✓ 已恢复默认，即将刷新");
+                    setTimeout(() => location.reload(), 500);
+                });
+
+                // Sidebar Footer
+                const sideFooter = el("div", "mjj-cc-sidebar-footer", sidebar);
+                const reSignBtn = el("button", "mjj-cc-side-action", sideFooter);
+                reSignBtn.type = "button";
+                reSignBtn.textContent = "🔂 重试今日签到";
+                reSignBtn.addEventListener("click", reSign);
+
+                const ghBtn = el("button", "mjj-cc-side-action", sideFooter);
+                ghBtn.type = "button";
+                ghBtn.textContent = "⭐ GitHub (Youngv/MJJ)";
+                ghBtn.addEventListener("click", () => GM_openInTab("https://github.com/Youngv/MJJ", { active: true }));
+
+                // Search Filtering across all category panes
+                searchInput.addEventListener("input", () => {
+                    const q = searchInput.value.trim().toLowerCase();
+                    if (!q) {
+                        const activeBtn = [...navButtons.entries()].find(([, b]) => b.classList.contains("is-active"));
+                        switchTab(activeBtn ? activeBtn[0] : "overview");
+                        return;
+                    }
+                    panes.forEach((pane, id) => {
+                        if (id === "overview" || id === "backup") {
+                            pane.classList.remove("is-active");
+                            return;
                         }
-                        // 主开关联动
-                        const toggleCard = (card, on) => {
-                            card.querySelectorAll(".layui-card-body input,.layui-card-body select,.layui-card-body textarea").forEach(el => {
-                                el.disabled = !on;
-                                el.closest(".layui-form-item")?.classList.toggle("layui-disabled", !on);
-                            });
-                            window.layui.form?.render(null, card.getAttribute("lay-filter"));
-                        };
-                        // 初始 + 监听
-                        r?.querySelectorAll?.(".header-checkbox input").forEach(cb => !cb.checked && toggleCard(cb.closest(".nsx-config-card"), false));
-                        window.layui.form?.on("switch(nsx-main-switch)", d => toggleCard(d.elem.closest(".nsx-config-card"), d.elem.checked));
-                        window.layui.use("colorpicker", () => {
-                            const cp = window.layui.colorpicker;
-                            r?.querySelectorAll?.("[data-color-path]").forEach(wrap => {
-                                const path = wrap.getAttribute("data-color-inp");
-                                const inp = r.querySelector(`input[name="${path}"]`);
-                                const init = wrap.getAttribute("data-color-val") || "";
-                                const def = wrap.getAttribute("data-color-default") || "";
-                                if (!inp) return;
+                        let hasMatch = false;
+                        pane.querySelectorAll(".mjj-card").forEach(card => {
+                            const hit = (card.dataset.searchText || "").includes(q);
+                            card.style.display = hit ? "" : "none";
+                            if (hit) hasMatch = true;
+                        });
+                        pane.classList.toggle("is-active", hasMatch);
+                    });
+                });
 
-                                const setBg = c => { inp.style.background = c || ""; };
-                                cp.render({
-                                    elem: wrap, color: init, alpha: true, predefine: true, format: "rgb",
-                                    change: setBg,
-                                    done(c) {
-                                        const final = c || def;
-                                        inp.value = final;
-                                        setBg(final);
-                                    },
-                                    cancel: setBg
-                                });
-                            });
-                        });
-                    },
-                    yes: (idx, ly) => {
-                        const r = ly?.[0] || ly, sc = r?.querySelector ? r : document;
-                        const changedKeys = [];
-                        sc.querySelectorAll("input,select,textarea").forEach(el => {
-                            if (!el.name) return;
-                            // radio 只保存选中的那个
-                            if (el.type === "radio" && !el.checked) return;
-                            let v;
-                            const vt = el.dataset.valueType;
-                            if (el.type === "checkbox") v = el.checked;
-                            else if (el.type === "radio") v = vt === "number" ? Number(el.value) : el.value;
-                            else if (el.tagName === "TEXTAREA") v = vt === "array" ? el.value.split("\n").map(s => s.trim()).filter(Boolean) : el.value;
-                            else if (el.type === "number" || vt === "number") { const n = Number(el.value); v = Number.isFinite(n) ? n : 0; }
-                            else v = el.value;
-                            if (v !== undefined) {
-                                const oldV = store.get(el.name);
-                                const o = typeof oldV === "object" ? JSON.stringify(oldV) : String(oldV);
-                                const n = typeof v === "object" ? JSON.stringify(v) : String(v);
-                                if (o !== n) changedKeys.push(el.name);
-                                store.set(el.name, v);
-                            }
-                        });
-                        applyRuntimeSettings(ctx, changedKeys);
-                        ctx.ui.layer.msg("设置已保存，已即时生效");
-                        setTimeout(() => ctx.ui.layer.close(idx), 300);
+                // Close handlers
+                overlay.addEventListener("click", (e) => {
+                    if (e.target === overlay) closeModal();
+                });
+                const onKeyDown = (e) => {
+                    if (e.key === "Escape" && document.body.contains(overlay)) {
+                        window.removeEventListener("keydown", onKeyDown);
+                        closeModal();
+                    }
+                };
+                window.addEventListener("keydown", onKeyDown);
+
+                switchTab(panes.has(initialTab) ? initialTab : "overview");
+                requestAnimationFrame(() => {
+                    overlay.classList.add("mjj-visible");
+                    if (highlightCardKey) {
+                        const targetCard = content.querySelector(`[data-card-key='${highlightCardKey}']`);
+                        targetCard?.scrollIntoView({ behavior: "smooth", block: "center" });
                     }
                 });
             };
 
+            // Inject Top-Bar Gear Icon in #nsx-icon-group
+            const injectTopBarSettingsIcon = () => {
+                const grp = ensureIconGroup();
+                if (!grp || grp.querySelector("#nsx-settings-trigger")) return;
+                const trigger = document.createElement("a");
+                trigger.id = "nsx-settings-trigger";
+                trigger.className = "settings-dropdown-on";
+                trigger.href = "javascript:void(0);";
+                trigger.title = "MJJ 控制中心 (Alt + M)";
+                trigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+                trigger.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    advSettings("overview");
+                });
+                grp.appendChild(trigger);
+            };
+            injectTopBarSettingsIcon();
+            setTimeout(injectTopBarSettingsIcon, 600);
+
+            window.addEventListener("keydown", (e) => {
+                if (e.altKey && (e.key === "m" || e.key === "M")) {
+                    e.preventDefault();
+                    const existing = document.getElementById("mjj-cc-overlay");
+                    if (existing) existing.remove();
+                    else advSettings("overview");
+                }
+            });
+
+            window.__nsxRuntime ||= {};
+            window.__nsxRuntime.openControlCenter = (tab = "overview", cardKey = "") => advSettings(tab, cardKey);
+            window.__nsxRuntime.exportFullConfig = exportConfig;
+            window.__nsxRuntime.importFullConfig = importConfig;
+
             const menuItems = [
+                { name: "control_center", cb: () => advSettings("overview"), text: "🎛️ MJJ 控制中心", states: [] },
                 { name: "sign_in", cb: switchState, text: "自动签到", states: [{ s1: "❌", s2: "关闭" }, { s1: "🎲", s2: "随机🍗" }, { s1: "📌", s2: "5个🍗" }] },
                 { name: "re_sign", cb: reSign, text: "🔂 重试签到", states: [] },
                 { name: "open_post_in_new_tab", cb: switchNewTab, text: "新标签页打开帖子", states: [{ s1: "❌", s2: "关闭" }, { s1: "✅", s2: "开启" }] },
-                { name: "export_config", cb: exportConfig, text: "📦 导出配置", states: [] },
-                { name: "import_config", cb: importConfig, text: "♻️ 还原配置", states: [], autoClose: false },
-                { name: "advanced_settings", cb: advSettings, text: "⚙️ 高级设置", states: [] },
-                { name: "feedback", cb: () => GM_openInTab("https://greasyfork.org/zh-CN/scripts/567109/feedback", { active: true, insert: true, setParent: true }), text: "💬 反馈 & 建议", states: [] }
+                { name: "export_config", cb: exportConfig, text: "📦 导出全量配置", states: [] },
+                { name: "import_config", cb: importConfig, text: "♻️ 导入/迁移配置", states: [], autoClose: false },
+                { name: "feedback", cb: () => GM_openInTab("https://github.com/Youngv/MJJ/issues", { active: true, insert: true, setParent: true }), text: "💬 反馈 & 建议", states: [] }
             ];
 
             regMenus();
@@ -3755,7 +4790,7 @@
 </svg>`;
 
     // ===== 基础 CSS =====
-    const BASE_CSS = `.blocked-post{display:none!important}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
+    const BASE_CSS = `.blocked-post{display:none!important}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
 
     const applyRuntimeSettings = (ctx, changedKeys = []) => {
         const changed = new Set(changedKeys || []);
@@ -3765,6 +4800,15 @@
         if (has("block_low_level")) window.__nsxRuntime?.reapplyLowLevelFilter?.();
         if (has("relation")) window.__nsxRuntime?.reapplyRelation?.();
         if (has("history")) window.__nsxRuntime?.refreshHistory?.();
+        if (has("open_post_in_new_tab")) {
+            writeNsPreferenceConfig({ openPostInNewPage: !!ctx.store.get("open_post_in_new_tab.enabled", false) });
+        }
+        if (has("ai_profile_ext") && ctx.store.get("ai_profile_ext.enabled", true)) {
+            try { modules.get("aiProfileExt")?.init?.(ctx); } catch { }
+        }
+        if (has("chat_backup_ext") && ctx.store.get("chat_backup_ext.enabled", true)) {
+            try { modules.get("chatBackupExt")?.init?.(ctx); } catch { }
+        }
         if (has("visited_color")) {
             const styleId = "nsx-visited-color";
             const enabled = ctx.store.get("visited_color.enabled", true);
@@ -7901,7 +8945,14 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   settingsCloseEl.addEventListener("click",tryCloseSettings);settingsCancelEl.addEventListener("click",tryCloseSettings);
   settingsOverlay.addEventListener("click",(e)=>{if(e.target===settingsOverlay)e.stopPropagation();});settingsDialogEl.addEventListener("click",e=>e.stopPropagation());
   settingsOpenEl.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openSettingsModal(AI_PROVIDER);});
-  if (!IS_TASK_WORKER) GM_registerMenuCommand("⚙️ NodeSeek AI 设置",()=>openSettingsModal(AI_PROVIDER));
+  window.__nsxRuntime ||= {};
+  window.__nsxRuntime.openAiSettings = () => openSettingsModal(AI_PROVIDER);
+  window.__nsxRuntime.getAiStatusSummary = () => ({
+    provider: AI_PROVIDER,
+    displayName: aiDisplayName(),
+    customEnabled: !!AI_SETTINGS?.customProfile?.enabled
+  });
+  if (!IS_TASK_WORKER) GM_registerMenuCommand("🤖 AI 画像与模型设置",()=>openSettingsModal(AI_PROVIDER));
 
   settingsHeadEl.addEventListener("pointerdown",e=>{if(e.button!==0||e.target.closest("button"))return;const r=settingsDialogEl.getBoundingClientRect();settingsDragSession={x:e.clientX,y:e.clientY,left:r.left,top:r.top,pid:e.pointerId};try{settingsHeadEl.setPointerCapture(e.pointerId);}catch{}e.preventDefault();});
   settingsHeadEl.addEventListener("pointermove",e=>{if(!settingsDragSession)return;settingsDialogEl.style.left=`${settingsDragSession.left+e.clientX-settingsDragSession.x}px`;settingsDialogEl.style.top=`${settingsDragSession.top+e.clientY-settingsDragSession.y}px`;constrainSettingsPosition();});
@@ -12612,7 +13663,7 @@ ${escapeDataForPrompt(payload)}
                     group: "🧭 辅助工具"
                 }
             },
-            match: ctx => location.pathname.startsWith("/notification") && ctx.store.get("chat_backup_ext.enabled", true),
+            match: ctx => ctx.loggedIn && ctx.store.get("chat_backup_ext.enabled", true),
             init() {
                 if (window.__nsxChatBackupBooted) return;
                 window.__nsxChatBackupBooted = true;
@@ -14599,9 +15650,12 @@ ${escapeDataForPrompt(payload)}
           false
         );
 
-        // 立即初始化 UI（不等待数据库和备份）
-        this.ui.initTalkListObserver();
-        Utils.debug("UI 初始化完成，历史私信按钮已添加");
+        const isNotificationPage = location.pathname.startsWith("/notification");
+        if (isNotificationPage) {
+          // 立即初始化 UI（不等待数据库和备份）
+          this.ui.initTalkListObserver();
+          Utils.debug("UI 初始化完成，历史私信按钮已添加");
+        }
 
         // 初始化数据库和WebDAV
         this.db = new ChatDB(this.userId, this.site);
@@ -14613,22 +15667,24 @@ ${escapeDataForPrompt(payload)}
         ? new R2WorkerBackupProvider(this.userId, this.site)
         : new WebDAVBackupProvider(this.userId, this.site);
 
-        // 打开页面后自动备份一次（静默忽略未配置等错误）
-        try {
-          await this.performBackup();
-        } catch (e) {
-          Utils.debug(`初始自动备份跳过: ${e?.message || e}`);
-        }
-        this._didInitialAutoBackup = true;
-
-        // 监听页面变化
-        this.setupPageListener();
-
-        // 注册菜单命令
+        // 注册菜单命令与全局快捷方法
         this.registerMenuCommands();
 
-        // 处理当前页面
-        this.handlePageChange();
+        if (isNotificationPage) {
+          // 打开页面后自动备份一次（静默忽略未配置等错误）
+          try {
+            await this.performBackup();
+          } catch (e) {
+            Utils.debug(`初始自动备份跳过: ${e?.message || e}`);
+          }
+          this._didInitialAutoBackup = true;
+
+          // 监听页面变化
+          this.setupPageListener();
+
+          // 处理当前页面
+          this.handlePageChange();
+        }
 
         Utils.log("NS-DF私信优化脚本初始化完成");
       } catch (error) {
@@ -15491,7 +16547,7 @@ ${escapeDataForPrompt(payload)}
      * 注册菜单命令
      */
     registerMenuCommands() {
-      GM_registerMenuCommand("备份设置", () => {
+      const openBackupConfigModal = () => {
         this.ui.showBackupConfig(this.backup, () => {
           const providerType = GM_getValue(
             "backup_provider_type",
@@ -15504,9 +16560,9 @@ ${escapeDataForPrompt(payload)}
           this.ui.showToast("备份配置已保存");
           this.performBackup();
         });
-      });
+      };
 
-      GM_registerMenuCommand("立即备份", async () => {
+      const runBackupNow = async () => {
         try {
           const result = await this.performBackup();
           if (result && result.partial) {
@@ -15517,11 +16573,30 @@ ${escapeDataForPrompt(payload)}
         } catch (error) {
           this.ui.showToast("备份失败: " + error.message, "error");
         }
-      });
+      };
 
-      GM_registerMenuCommand("历史聊天记录", () => {
+      const openHistoryChats = () => {
         this.showHistoryChats();
-      });
+      };
+
+      window.__nsxRuntime ||= {};
+      window.__nsxRuntime.openChatBackupSettings = openBackupConfigModal;
+      window.__nsxRuntime.runChatBackupNow = runBackupNow;
+      window.__nsxRuntime.openChatHistory = openHistoryChats;
+      window.__nsxRuntime.getChatBackupSummary = async () => {
+        try {
+          const chats = this.db ? await this.db.getAllTalkMessages() : [];
+          const webdavOn = !!GM_getValue("backup_webdav_enabled", true);
+          const r2On = !!GM_getValue("backup_r2_enabled", false);
+          return { count: Array.isArray(chats) ? chats.length : 0, webdavOn, r2On };
+        } catch {
+          return { count: 0, webdavOn: false, r2On: false };
+        }
+      };
+
+      GM_registerMenuCommand("☁️ 私信云备份设置", openBackupConfigModal);
+      GM_registerMenuCommand("⚡ 立即备份私信", runBackupNow);
+      GM_registerMenuCommand("📜 历史私信记录", openHistoryChats);
     }
   }
 
