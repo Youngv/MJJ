@@ -1711,6 +1711,27 @@
             resolve(false);
         }
     });
+    const collectExtraGmStorage = () => {
+        const extra = {};
+        try {
+            const keys = typeof GM_listValues === "function" ? GM_listValues() : [];
+            keys.forEach(k => {
+                if (!k || k === "settings") return;
+                const val = GM_getValue(k, undefined);
+                if (val !== undefined) extra[k] = cloneData(val);
+            });
+        } catch { }
+        return extra;
+    };
+    const decodeTmStorageVal = (raw) => {
+        if (typeof raw !== "string" || raw.length === 0) return raw;
+        const prefix = raw[0], body = raw.slice(1);
+        if (prefix === "b") return body === "true";
+        if (prefix === "n") return Number(body);
+        if (prefix === "s") return body;
+        if (prefix === "o") { try { return JSON.parse(body); } catch { return raw; } }
+        return raw;
+    };
     const createBackupPayload = async () => ({
         format: "nsx-backup",
         schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -1718,6 +1739,7 @@
         scriptVersion: info.version,
         data: {
             settings: normalizeSettingsForBackup(store.init()),
+            gmStorage: collectExtraGmStorage(),
             localStorage: BACKUP_LOCAL_KEYS.reduce((acc, key) => {
                 const value = readBackupLocalValue(key);
                 if (value !== null) acc[key] = cloneData(value);
@@ -1729,23 +1751,98 @@
         }
     });
     const isValidBackupPayload = payload => {
-        if (!payload || typeof payload !== "object") return false;
-        if (payload.format !== "nsx-backup") return false;
-        if (!payload.data || typeof payload.data !== "object") return false;
-        if (!payload.data.settings || typeof payload.data.settings !== "object" || Array.isArray(payload.data.settings)) return false;
-        const ls = payload.data.localStorage;
-        if (!(ls === undefined || (ls && typeof ls === "object" && !Array.isArray(ls)))) return false;
-        const idb = payload.data.indexedDB;
-        return idb === undefined || (idb && typeof idb === "object" && !Array.isArray(idb));
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+        // 1. 标准 NSX_Pro_backup_*.json
+        if (payload.format === "nsx-backup" && payload.data && typeof payload.data === "object") {
+            return true;
+        }
+        // 2. Tampermonkey 实用工具导出的全量备份 JSON (含 scripts 数组)
+        if (Array.isArray(payload.scripts)) return true;
+        // 3. Tampermonkey 单个脚本「存储 (Storage)」页导出的 JSON 或 AI 画像 / 私信备份配置 JSON
+        if (
+            payload["ns-ai-profile-v2.8-settings"] ||
+            payload.providers ||
+            payload.webdav_config ||
+            payload.r2worker_config ||
+            payload.settings ||
+            (payload.config && (payload.config.webdav || payload.config.r2))
+        ) {
+            return true;
+        }
+        return false;
     };
     const applyBackupPayload = async (payload) => {
+        // 分支 A: Tampermonkey 实用工具全量导出文件 (scripts 数组)
+        if (Array.isArray(payload?.scripts)) {
+            payload.scripts.forEach(sc => {
+                const rawData = sc?.storage?.data;
+                if (!rawData || typeof rawData !== "object") return;
+                for (const [k, rawVal] of Object.entries(rawData)) {
+                    const val = decodeTmStorageVal(rawVal);
+                    if (k === "settings" && val && typeof val === "object") {
+                        GM_setValue("settings", normalizeSettingsForBackup(val));
+                    } else {
+                        GM_setValue(k, val);
+                    }
+                }
+            });
+            cfgCache = null;
+            return;
+        }
+
+        // 分支 B: ns-df-chat-backup 备份文件 ({ metadata, config, chats })
+        if (payload?.config && (payload.config.webdav || payload.config.r2 || payload.config.backup)) {
+            if (payload.config.backup) {
+                GM_setValue("backup_webdav_enabled", payload.config.backup.webdav_enabled ?? true);
+                GM_setValue("backup_r2_enabled", payload.config.backup.r2_enabled ?? false);
+            }
+            if (payload.config.retention) {
+                GM_setValue("retention_type", payload.config.retention.type || "count");
+                GM_setValue("retention_count", payload.config.retention.count || 30);
+                GM_setValue("retention_days", payload.config.retention.days || 30);
+            }
+            if (payload.config.webdav?.serverUrl) {
+                GM_setValue("webdav_config", JSON.stringify(payload.config.webdav));
+            }
+            if (payload.config.r2?.workerBaseUrl) {
+                GM_setValue("r2worker_config", JSON.stringify(payload.config.r2));
+            }
+            return;
+        }
+
+        // 分支 C: Tampermonkey 脚本「存储 (Storage)」JSON 或直接的 AI 画像配置对象
+        if (payload?.format !== "nsx-backup") {
+            if (payload.providers && payload.activeProvider) {
+                GM_setValue("ns-ai-profile-v2.8-settings", payload);
+                return;
+            }
+            for (const [k, v] of Object.entries(payload)) {
+                const decoded = decodeTmStorageVal(v);
+                if (k === "settings" && decoded && typeof decoded === "object") {
+                    cfgCache = null;
+                    GM_setValue("settings", normalizeSettingsForBackup(decoded));
+                } else {
+                    GM_setValue(k, decoded);
+                }
+            }
+            cfgCache = null;
+            return;
+        }
+
+        // 分支 D: 标准 nsx-backup 格式
         const importedSettings = normalizeSettingsForBackup(payload?.data?.settings || {});
+        const importedGm = payload?.data?.gmStorage || {};
         const importedLs = payload?.data?.localStorage || {};
         const importedIdb = payload?.data?.indexedDB || {};
         const schemaVersion = Number(payload?.schemaVersion || 1);
         const shouldClearMissingLocalKeys = schemaVersion >= BACKUP_SCHEMA_VERSION;
         cfgCache = null;
         GM_setValue("settings", importedSettings);
+        if (importedGm && typeof importedGm === "object") {
+            for (const [k, v] of Object.entries(importedGm)) {
+                if (k && k !== "settings") GM_setValue(k, v);
+            }
+        }
         BACKUP_LOCAL_KEYS.forEach(key => {
             if (Object.prototype.hasOwnProperty.call(importedLs, key)) writeBackupLocalValue(key, importedLs[key]);
             else if (shouldClearMissingLocalKeys) localStorage.removeItem(key);
