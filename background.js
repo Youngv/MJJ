@@ -2,6 +2,33 @@
 
 const activeRequests = new Map();
 
+function ensureSessionOriginRule() {
+  try {
+    chrome.declarativeNetRequest?.updateSessionRules?.({
+      removeRuleIds: [1001],
+      addRules: [
+        {
+          id: 1001,
+          priority: 1,
+          action: {
+            type: "modifyHeaders",
+            requestHeaders: [{ header: "Origin", operation: "remove" }]
+          },
+          condition: {
+            tabIds: [-1],
+            excludedRequestDomains: ["nodeimage.com"],
+            resourceTypes: ["xmlhttprequest"]
+          }
+        }
+      ]
+    });
+  } catch {}
+}
+
+ensureSessionOriginRule();
+chrome.runtime.onInstalled?.addListener?.(ensureSessionOriginRule);
+chrome.runtime.onStartup?.addListener?.(ensureSessionOriginRule);
+
 function base64ToUint8Array(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);

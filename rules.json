@@ -24,7 +24,7 @@
   },
   {
     "id": 2,
-    "priority": 1,
+    "priority": 2,
     "action": {
       "type": "modifyHeaders",
       "requestHeaders": [
@@ -35,8 +35,12 @@
       ]
     },
     "condition": {
-      "tabIds": [-1],
-      "excludedRequestDomains": ["nodeimage.com"],
+      "requestDomains": [
+        "111666.best",
+        "catbox.moe",
+        "imgbb.com",
+        "freeimage.host"
+      ],
       "resourceTypes": ["xmlhttprequest"]
     }
   }
