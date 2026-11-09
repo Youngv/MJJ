@@ -1,4 +1,4 @@
-// MJJ - Unified Popup Controller (v1.3.0)
+// MJJ - Unified Popup Controller (v1.4.0)
 document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("menu-container");
   const verBadge = document.getElementById("ver-badge");
@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const aiSub = st.aiText ? esc(st.aiText) : "DeepSeek / OpenAI / Prompt";
+        const imgSub = st.imageHostText ? esc(st.imageHostText) : "5 大图床与编辑器传图";
         const lvSub = typeof st.levelCacheCount === "number" ? `已缓存 ${st.levelCacheCount} 人等级` : "低等级发帖模糊与黑名单";
         const signPill = esc(st.signInText || "🎲 随机🍗");
         const newTabPill = esc(st.newTabText || "❌ 关闭");
@@ -73,13 +74,13 @@ document.addEventListener("DOMContentLoaded", async () => {
               <div class="bento-title"><span>💬 私信与云备份</span><span>›</span></div>
               <div class="bento-sub">历史记录 / WebDAV & R2</div>
             </button>
+            <button class="bento-card" data-tab="image">
+              <div class="bento-title"><span>🖼️ 图床与上传</span><span>›</span></div>
+              <div class="bento-sub">${imgSub}</div>
+            </button>
             <button class="bento-card" data-tab="🚫 过滤设置" data-card="block_low_level">
               <div class="bento-title"><span>🛡️ 低等级发帖模糊</span><span>›</span></div>
               <div class="bento-sub">${lvSub}</div>
-            </button>
-            <button class="bento-card" data-tab="backup">
-              <div class="bento-title"><span>📦 配置导出与还原</span><span>›</span></div>
-              <div class="bento-sub">全量 JSON 备份与恢复</div>
             </button>
           </div>
 

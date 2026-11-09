@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MJJ
-// @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
+// @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、多图床上传、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
-// @version      1.3.0
+// @version      1.4.0
 // @match        *://www.nodeseek.com/*
 // @match        *://www.deepflood.com/*
 // @require      https://s4.zstatic.net/ajax/libs/layui/2.10.3/layui.min.js
@@ -2581,6 +2581,173 @@ html.dark-layout #mjj-cc-overlay {
     border-radius: 11px;
 }
 
+/* 云备份表单与通用堆叠表单布局优化 */
+.mjj-cloud-channel {
+    background: var(--mjj-bg-sub);
+    border: 1px solid var(--mjj-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: border-color 0.18s ease, opacity 0.18s ease;
+}
+.mjj-cloud-channel.is-active {
+    border-color: rgba(16, 185, 129, 0.38);
+}
+.mjj-cloud-channel.is-off .mjj-cloud-body {
+    opacity: 0.48;
+    pointer-events: none;
+}
+.mjj-cloud-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--mjj-border);
+}
+.mjj-cloud-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.mjj-cloud-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.mjj-cloud-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--mjj-text);
+}
+.mjj-cloud-sub {
+    font-size: 12px;
+    color: var(--mjj-text-sub);
+}
+.mjj-cloud-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--mjj-bg-card);
+    color: var(--mjj-text-sub);
+    border: 1px solid var(--mjj-border);
+}
+.mjj-cloud-pill.is-on {
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.mjj-form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px;
+}
+.mjj-form-item {
+    grid-column: span 12;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mjj-form-item.col-6 {
+    grid-column: span 6;
+}
+@media (max-width: 720px) {
+    .mjj-form-item.col-6 {
+        grid-column: span 12;
+    }
+}
+.mjj-form-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--mjj-text);
+}
+.mjj-form-hint {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--mjj-text-sub);
+}
+.mjj-input-group {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+}
+.mjj-input-group .mjj-input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+.mjj-input-addon {
+    padding: 0 11px;
+    border-radius: 8px;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-card);
+    color: var(--mjj-text-sub);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.mjj-input-addon:hover {
+    border-color: var(--mjj-accent);
+    color: var(--mjj-accent);
+    background: var(--mjj-accent-soft);
+}
+.mjj-cloud-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--mjj-border);
+}
+.mjj-cloud-status {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-line;
+    border: 1px solid var(--mjj-border);
+    background: var(--mjj-bg-sub);
+    color: var(--mjj-text);
+}
+.mjj-cloud-status:not(:empty) {
+    display: block;
+}
+.mjj-cloud-status.is-success {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: var(--mjj-accent);
+}
+.mjj-cloud-status.is-error {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #ef4444;
+}
+.mjj-cloud-status.is-warning {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #f59e0b;
+}
+.mjj-image-embed-host .ns-ai-settings-card {
+    background: var(--mjj-bg-sub) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+}
+
 /* 兼容云端备份恢复列表弹窗 & 顶部栏三个悬浮抽屉统一 MJJ 风格 */
 .nodeseek-modal {
     backdrop-filter: blur(5px) !important;
@@ -2813,13 +2980,18 @@ html.dark-layout #mjj-cc-overlay {
             const ids = [];
             const txt = (m, v) => `${m.text}: ${m.states[v].s1} ${m.states[v].s2}`;
 
+            const getSignStateIdx = () => {
+                if (store.get(`sign_in.${code}.enabled`, true) === false) return 0;
+                return Number(store.get(`sign_in.${code}.method`, 1)) === 2 ? 2 : 1;
+            };
+
             const regMenus = () => {
                 ids.splice(0).forEach(i => GM_unregisterMenuCommand(i));
                 menuItems.forEach(m => {
                     let lbl = m.text;
                     if (m.states.length > 0) {
                         let v = 0;
-                        if (m.name === "sign_in") v = store.get(`sign_in.${code}.method`, 0);
+                        if (m.name === "sign_in") v = getSignStateIdx();
                         else v = store.get(`${m.name}.enabled`, true) === false ? 0 : 1;
                         lbl = txt(m, v);
                     }
@@ -2831,10 +3003,13 @@ html.dark-layout #mjj-cc-overlay {
             const switchState = (n, states) => {
                 if (n === "sign_in") {
                     if (!ctx.site) return;
-                    let cur = store.get(`sign_in.${code}.method`, 0);
-                    cur = (cur + 1) % states.length;
-                    store.set(`sign_in.${code}.enabled`, cur !== 0);
-                    store.set(`sign_in.${code}.method`, cur || 1);
+                    const cur = getSignStateIdx();
+                    const next = (cur + 1) % states.length;
+                    store.set(`sign_in.${code}.enabled`, next !== 0);
+                    if (next !== 0) {
+                        store.set(`sign_in.${code}.method`, next);
+                    }
+                    applyRuntimeSettings(ctx, [`sign_in.${code}.enabled`, `sign_in.${code}.method`]);
                 } else if (n === "loading_post") {
                     const next = !store.get("loading_post.enabled", true);
                     store.set("loading_post.enabled", next);
@@ -2964,7 +3139,7 @@ html.dark-layout #mjj-cc-overlay {
                 if (existing) existing.remove();
 
                 const defs = store.getDefaults(), metas = store.getMeta();
-                const ignore = new Set(["version", "debug", "ui"]);
+                const ignore = new Set(["version", "debug", "ui", "image_upload"]);
 
                 const metaToOrder = new Map();
                 modules.forEach(m => {
@@ -3127,7 +3302,7 @@ html.dark-layout #mjj-cc-overlay {
                 };
 
                 // 1. Overview Pane
-                const overviewPane = addNavTab("overview", "🏠 套件总览", "3合1");
+                const overviewPane = addNavTab("overview", "🏠 套件总览");
                 const stats = collectLiveStats();
                 const statsGrid = el("div", "mjj-stats-grid", overviewPane);
 
@@ -3157,12 +3332,17 @@ html.dark-layout #mjj-cc-overlay {
                 });
                 aiTop.appendChild(aiMasterSw.wrap);
                 const aiDesc = el("div", "mjj-suite-desc", aiSuite);
-                aiDesc.textContent = "在帖子楼层与用户主页注入「AI 画像」与「交易深挖」按钮，支持 DeepSeek / OpenAI / 第三方兼容接口、自定义 Prompt 预设、账号悬停预览及多图床分享卡片。";
+                aiDesc.textContent = "在帖子楼层与用户主页注入「AI 画像」与「交易深挖」按钮，支持 DeepSeek / OpenAI / 第三方兼容接口、自定义 Prompt 预设及账号悬停预览。";
                 const aiBtns = el("div", "mjj-btn-row", aiSuite);
                 const openAiBtn = el("button", "mjj-btn is-primary", aiBtns);
                 openAiBtn.type = "button";
                 openAiBtn.textContent = "🤖 进入 AI 画像与模型设置";
                 openAiBtn.addEventListener("click", () => switchTab("ai"));
+
+                const openImgFromAiBtn = el("button", "mjj-btn", aiBtns);
+                openImgFromAiBtn.type = "button";
+                openImgFromAiBtn.textContent = "🖼️ 多图床与编辑器传图设置";
+                openImgFromAiBtn.addEventListener("click", () => switchTab("image"));
 
                 // Suite 2: Chat Backup
                 const chatSuite = el("div", "mjj-suite-card", overviewPane);
@@ -3463,7 +3643,7 @@ html.dark-layout #mjj-cc-overlay {
                 const chatCloudTitle = el("div", "mjj-suite-title", chatCloudCard);
                 chatCloudTitle.innerHTML = `<span>☁️ WebDAV / Cloudflare R2 云备份配置</span>`;
                 const chatCloudDesc = el("div", "mjj-suite-desc", chatCloudCard);
-                chatCloudDesc.textContent = "支持同时开启 WebDAV 与 Cloudflare R2 双通道备份。保存配置后将自动把最新私信与备注加密同步至云端。";
+                chatCloudDesc.textContent = "支持独立或同时开启 WebDAV 与 Cloudflare R2 双通道备份。可先点击「测试云端连接」验证服务器与凭证，保存配置后自动同步私信记录与备注。";
 
                 const readJsonGm = (key, fallback = {}) => {
                     try {
@@ -3476,52 +3656,145 @@ html.dark-layout #mjj-cc-overlay {
                 const webdavInit = readJsonGm("webdav_config", {});
                 const r2Init = readJsonGm("r2worker_config", {});
 
-                // WebDAV Subcard
-                const webdavSub = el("div", "mjj-subcard", chatCloudCard);
-                const webdavHead = el("div", "mjj-subcard-head", webdavSub);
-                const webdavTitle = el("div", "mjj-subcard-title", webdavHead);
-                webdavTitle.textContent = "📁 WebDAV 备份通道（坚果云 / Nextcloud / Alist）";
-                const webdavSw = createSwitchEl(GM_getValue("backup_webdav_enabled", true), () => {});
-                webdavHead.appendChild(webdavSw.wrap);
-
-                const webdavGrid = el("div", "mjj-card-body", webdavSub);
-                webdavGrid.style.padding = "4px 0 0";
-                const makeSimpleInputRow = (parent, labelText, placeholder, initVal, type = "text", col6 = false) => {
-                    const f = el("div", `mjj-field${col6 ? " col-6" : ""}`, parent);
-                    const l = el("div", "mjj-field-label", f);
-                    l.textContent = labelText;
-                    const inp = el("input", "mjj-input", f);
-                    inp.type = type;
-                    inp.placeholder = placeholder;
+                const makeFormItem = (parent, labelText, hintText, placeholder, initVal, opts = {}) => {
+                    const item = el("div", `mjj-form-item${opts.col6 ? " col-6" : ""}`, parent);
+                    const lblRow = el("div", "mjj-form-label", item);
+                    const lblSpan = el("span", "", lblRow);
+                    lblSpan.textContent = labelText;
+                    if (hintText) {
+                        const hintSpan = el("span", "mjj-form-hint", lblRow);
+                        hintSpan.textContent = hintText;
+                    }
+                    const grp = el("div", "mjj-input-group", item);
+                    const inp = el("input", "mjj-input", grp);
+                    inp.type = opts.type || "text";
+                    inp.placeholder = placeholder || "";
                     inp.value = initVal || "";
-                    inp.style.width = col6 ? "180px" : "320px";
-                    inp.style.maxWidth = "100%";
+                    inp.autocomplete = "off";
+                    inp.spellcheck = false;
+                    if (opts.type === "password") {
+                        const toggleBtn = el("button", "mjj-input-addon", grp);
+                        toggleBtn.type = "button";
+                        toggleBtn.textContent = "显示";
+                        toggleBtn.addEventListener("click", () => {
+                            const isPwd = inp.type === "password";
+                            inp.type = isPwd ? "text" : "password";
+                            toggleBtn.textContent = isPwd ? "隐藏" : "显示";
+                        });
+                    }
                     return inp;
                 };
-                const wdUrlInp = makeSimpleInputRow(webdavGrid, "服务器地址", "https://dav.jianguoyun.com/dav/", webdavInit.serverUrl || "");
-                const wdUserInp = makeSimpleInputRow(webdavGrid, "用户名", "WebDAV 账号", webdavInit.username || "", "text", true);
-                const wdPassInp = makeSimpleInputRow(webdavGrid, "应用密码", "WebDAV 密码 / Token", webdavInit.password || "", "password", true);
-                const wdPathInp = makeSimpleInputRow(webdavGrid, "备份目录路径", "/nodeseek_chat_backup/", webdavInit.backupPath || "/nodeseek_chat_backup/");
 
-                // R2 Subcard
-                const r2Sub = el("div", "mjj-subcard", chatCloudCard);
-                const r2Head = el("div", "mjj-subcard-head", r2Sub);
-                const r2Title = el("div", "mjj-subcard-title", r2Head);
+                // WebDAV Channel Card
+                const wdInitOn = !!GM_getValue("backup_webdav_enabled", true);
+                const webdavSub = el("div", `mjj-cloud-channel ${wdInitOn ? "is-active" : "is-off"}`, chatCloudCard);
+                const webdavHead = el("div", "mjj-cloud-head", webdavSub);
+                const webdavTitleWrap = el("div", "mjj-cloud-title-wrap", webdavHead);
+                const webdavTitleRow = el("div", "mjj-cloud-title-row", webdavTitleWrap);
+                const webdavTitle = el("span", "mjj-cloud-title", webdavTitleRow);
+                webdavTitle.textContent = "📁 WebDAV 备份通道";
+                const webdavPill = el("span", `mjj-cloud-pill ${wdInitOn ? "is-on" : ""}`, webdavTitleRow);
+                webdavPill.textContent = wdInitOn ? "已启用" : "未启用";
+                const webdavSubText = el("div", "mjj-cloud-sub", webdavTitleWrap);
+                webdavSubText.textContent = "兼容坚果云、Nextcloud、Alist、群晖 Synology、InfiniCLOUD 等标准 WebDAV 服务";
+
+                const webdavSw = createSwitchEl(wdInitOn, (on) => {
+                    webdavSub.classList.toggle("is-active", on);
+                    webdavSub.classList.toggle("is-off", !on);
+                    webdavPill.classList.toggle("is-on", on);
+                    webdavPill.textContent = on ? "已启用" : "未启用";
+                    updateCloudSummaryText();
+                });
+                webdavHead.appendChild(webdavSw.wrap);
+
+                const webdavBody = el("div", "mjj-cloud-body mjj-form-grid", webdavSub);
+                const wdUrlInp = makeFormItem(
+                    webdavBody,
+                    "WebDAV 服务器地址 (Server URL)",
+                    "支持完整目录 URL 或根地址",
+                    "https://dav.jianguoyun.com/dav/",
+                    webdavInit.serverUrl || ""
+                );
+                const wdUserInp = makeFormItem(
+                    webdavBody,
+                    "WebDAV 账号 / 用户名",
+                    "必填",
+                    "例如：your_email@example.com",
+                    webdavInit.username || "",
+                    { col6: true }
+                );
+                const wdPassInp = makeFormItem(
+                    webdavBody,
+                    "应用专用密码 / Token",
+                    "必填",
+                    "WebDAV 应用密码（非网页登录密码）",
+                    webdavInit.password || "",
+                    { type: "password", col6: true }
+                );
+                const wdPathInp = makeFormItem(
+                    webdavBody,
+                    "远端备份目录路径",
+                    "留空默认 /nodeseek_chat_backup/",
+                    "/nodeseek_chat_backup/",
+                    webdavInit.backupPath || "/nodeseek_chat_backup/"
+                );
+
+                // Cloudflare R2 Channel Card
+                const r2InitOn = !!GM_getValue("backup_r2_enabled", false);
+                const r2Sub = el("div", `mjj-cloud-channel ${r2InitOn ? "is-active" : "is-off"}`, chatCloudCard);
+                const r2Head = el("div", "mjj-cloud-head", r2Sub);
+                const r2TitleWrap = el("div", "mjj-cloud-title-wrap", r2Head);
+                const r2TitleRow = el("div", "mjj-cloud-title-row", r2TitleWrap);
+                const r2Title = el("span", "mjj-cloud-title", r2TitleRow);
                 r2Title.textContent = "☁️ Cloudflare R2 Worker 备份通道";
-                const r2Sw = createSwitchEl(GM_getValue("backup_r2_enabled", false), () => {});
+                const r2Pill = el("span", `mjj-cloud-pill ${r2InitOn ? "is-on" : ""}`, r2TitleRow);
+                r2Pill.textContent = r2InitOn ? "已启用" : "未启用";
+                const r2SubText = el("div", "mjj-cloud-sub", r2TitleWrap);
+                r2SubText.textContent = "通过自建 Cloudflare Worker 读写 R2 存储桶（暴露 /upload、/list、/download、/delete 端点）";
+
+                const r2Sw = createSwitchEl(r2InitOn, (on) => {
+                    r2Sub.classList.toggle("is-active", on);
+                    r2Sub.classList.toggle("is-off", !on);
+                    r2Pill.classList.toggle("is-on", on);
+                    r2Pill.textContent = on ? "已启用" : "未启用";
+                    updateCloudSummaryText();
+                });
                 r2Head.appendChild(r2Sw.wrap);
 
-                const r2Grid = el("div", "mjj-card-body", r2Sub);
-                r2Grid.style.padding = "4px 0 0";
-                const r2UrlInp = makeSimpleInputRow(r2Grid, "Worker 地址", "https://your-worker.your-domain.workers.dev", r2Init.workerBaseUrl || "");
-                const r2TokenInp = makeSimpleInputRow(r2Grid, "鉴权密钥 (X-Auth-Token)", "可选，与 Worker 环境变量一致", r2Init.authToken || "", "password", true);
-                const r2PathInp = makeSimpleInputRow(r2Grid, "基础路径前缀", "/nodeseek_chat_backup/", r2Init.basePath || "/nodeseek_chat_backup/", "text", true);
+                const r2Body = el("div", "mjj-cloud-body mjj-form-grid", r2Sub);
+                const r2UrlInp = makeFormItem(
+                    r2Body,
+                    "Worker 接口地址 (Worker Base URL)",
+                    "无需末尾斜杠",
+                    "https://your-worker.your-subdomain.workers.dev",
+                    r2Init.workerBaseUrl || ""
+                );
+                const r2TokenInp = makeFormItem(
+                    r2Body,
+                    "Bearer 鉴权密钥 (Auth Token)",
+                    "必填，对应 Worker 环境变量",
+                    "填写 Worker 配置的 Bearer Token",
+                    r2Init.authToken || "",
+                    { type: "password", col6: true }
+                );
+                const r2PathInp = makeFormItem(
+                    r2Body,
+                    "存储路径前缀 (Base Path)",
+                    "R2 对象 Key 前缀",
+                    "/ns_df_messages_backup/",
+                    r2Init.basePath || "/ns_df_messages_backup/",
+                    { col6: true }
+                );
 
-                // Retention Subcard
-                const retSub = el("div", "mjj-subcard", chatCloudCard);
-                const retHead = el("div", "mjj-subcard-head", retSub);
-                const retTitle = el("div", "mjj-subcard-title", retHead);
+                // Retention Strategy Card
+                const retSub = el("div", "mjj-cloud-channel is-active", chatCloudCard);
+                const retHead = el("div", "mjj-cloud-head", retSub);
+                const retTitleWrap = el("div", "mjj-cloud-title-wrap", retHead);
+                const retTitle = el("div", "mjj-cloud-title", retTitleWrap);
                 retTitle.textContent = "🗂️ 历史备份清理与保留策略";
+                const retSubText = el("div", "mjj-cloud-sub", retTitleWrap);
+                retSubText.textContent = "每次同步完成后自动按策略清理云端过期的历史快照，避免占用过多存储空间";
+
                 let curRetType = GM_getValue("retention_type", "count");
                 const retSeg = el("div", "mjj-segmented", retHead);
                 const retBtnCount = el("button", `mjj-seg-btn${curRetType === "count" ? " is-active" : ""}`, retSeg);
@@ -3532,27 +3805,147 @@ html.dark-layout #mjj-cc-overlay {
                 retBtnDays.textContent = "按天数保留";
 
                 const retRow = el("div", "mjj-field", retSub);
+                retRow.style.padding = "4px 0 0";
                 const retRowLbl = el("div", "mjj-field-label", retRow);
-                const retNumInp = el("input", "mjj-input mjj-input-num", retRow);
+                const retNumWrap = el("div", "mjj-field-ctrl", retRow);
+                const retNumInp = el("input", "mjj-input mjj-input-num", retNumWrap);
                 retNumInp.type = "number";
                 retNumInp.min = "1";
                 retNumInp.max = "365";
+                const retUnitBadge = el("span", "mjj-cloud-pill", retNumWrap);
                 const syncRetUi = () => {
                     retBtnCount.classList.toggle("is-active", curRetType === "count");
                     retBtnDays.classList.toggle("is-active", curRetType === "days");
                     retRowLbl.textContent = curRetType === "count"
-                        ? "最大保留备份文件数（超出后自动清理最旧备份）"
-                        : "最大保留天数（自动清理早于该天数的备份）";
+                        ? "最大保留备份文件数（超出后自动删除最旧的备份文件）"
+                        : "最大保留天数（自动删除早于该天数的历史备份）";
+                    retUnitBadge.textContent = curRetType === "count" ? "份快照" : "天";
                     retNumInp.value = String(GM_getValue(curRetType === "count" ? "retention_count" : "retention_days", 30));
                 };
                 syncRetUi();
                 retBtnCount.addEventListener("click", () => { curRetType = "count"; syncRetUi(); });
                 retBtnDays.addEventListener("click", () => { curRetType = "days"; syncRetUi(); });
 
-                const saveCloudRow = el("div", "mjj-btn-row", chatCloudCard);
+                const cloudStatusEl = el("div", "mjj-cloud-status", chatCloudCard);
+                const setCloudStatus = (msg = "", type = "") => {
+                    cloudStatusEl.textContent = msg;
+                    cloudStatusEl.className = `mjj-cloud-status${type ? ` is-${type}` : ""}`;
+                };
+
+                const cloudFooter = el("div", "mjj-cloud-footer", chatCloudCard);
+                const cloudSummaryEl = el("div", "mjj-cloud-sub", cloudFooter);
+                const updateCloudSummaryText = () => {
+                    const wdOn = webdavSw.input.checked;
+                    const r2On = r2Sw.input.checked;
+                    if (wdOn && r2On) cloudSummaryEl.textContent = "当前模式：WebDAV + Cloudflare R2 双通道同时备份";
+                    else if (wdOn) cloudSummaryEl.textContent = "当前模式：仅使用 WebDAV 通道备份";
+                    else if (r2On) cloudSummaryEl.textContent = "当前模式：仅使用 Cloudflare R2 通道备份";
+                    else cloudSummaryEl.textContent = "当前模式：未启用云端备份（仅缓存在本地浏览器 IndexedDB）";
+                };
+                updateCloudSummaryText();
+
+                const saveCloudRow = el("div", "mjj-btn-row", cloudFooter);
+                saveCloudRow.style.marginTop = "0";
+
+                const testCloudBtn = el("button", "mjj-btn", saveCloudRow);
+                testCloudBtn.type = "button";
+                testCloudBtn.textContent = "🔍 测试云端连接";
+                testCloudBtn.addEventListener("click", async () => {
+                    const wdOn = webdavSw.input.checked;
+                    const r2On = r2Sw.input.checked;
+                    if (!wdOn && !r2On) {
+                        setCloudStatus("请至少开启一个云备份通道（WebDAV 或 Cloudflare R2）后再测试连接。", "warning");
+                        return;
+                    }
+                    testCloudBtn.disabled = true;
+                    testCloudBtn.textContent = "⏳ 正在测试...";
+                    const logs = [];
+                    let hasErr = false;
+
+                    if (wdOn) {
+                        const sUrl = wdUrlInp.value.trim();
+                        const sUser = wdUserInp.value.trim();
+                        const sPass = wdPassInp.value.trim();
+                        if (!sUrl || !sUser || !sPass) {
+                            logs.push("✕ [WebDAV] 请填写完整的服务器地址、用户名与应用密码");
+                            hasErr = true;
+                        } else {
+                            const t0 = performance.now();
+                            try {
+                                const status = await new Promise((resolve, reject) => {
+                                    GM_xmlhttpRequest({
+                                        method: "PROPFIND",
+                                        url: sUrl,
+                                        headers: {
+                                            Authorization: `Basic ${btoa(`${sUser}:${sPass}`)}`,
+                                            Depth: "0"
+                                        },
+                                        timeout: 15000,
+                                        onload: (res) => resolve(res.status),
+                                        onerror: (e) => reject(new Error(e?.statusText || "网络请求失败")),
+                                        ontimeout: () => reject(new Error("连接超时 (15s)"))
+                                    });
+                                });
+                                const ms = Math.round(performance.now() - t0);
+                                if ((status >= 200 && status < 300) || status === 207) {
+                                    logs.push(`✓ [WebDAV] 连接与鉴权成功 (HTTP ${status} · ${ms} ms)`);
+                                } else if (status === 401 || status === 403) {
+                                    logs.push(`✕ [WebDAV] 鉴权失败 (HTTP ${status})，请检查用户名或应用专用密码`);
+                                    hasErr = true;
+                                } else {
+                                    logs.push(`⚠️ [WebDAV] 服务器返回 HTTP ${status} (${ms} ms)，请确认 WebDAV 地址是否正确`);
+                                    hasErr = true;
+                                }
+                            } catch (e) {
+                                logs.push(`✕ [WebDAV] 连接异常：${e?.message || e}`);
+                                hasErr = true;
+                            }
+                        }
+                    }
+
+                    if (r2On) {
+                        let base = r2UrlInp.value.trim().replace(/\/$/, "");
+                        const token = r2TokenInp.value.trim();
+                        if (!base || !token) {
+                            logs.push("✕ [Cloudflare R2] 请填写完整的 Worker 接口地址与 Bearer 鉴权密钥");
+                            hasErr = true;
+                        } else {
+                            if (!/^https?:\/\//i.test(base)) base = `https://${base}`;
+                            const t0 = performance.now();
+                            try {
+                                const resObj = await new Promise((resolve, reject) => {
+                                    GM_xmlhttpRequest({
+                                        method: "GET",
+                                        url: `${base}/list?prefix=ping`,
+                                        headers: { Authorization: `Bearer ${token}` },
+                                        timeout: 15000,
+                                        onload: (res) => resolve(res),
+                                        onerror: (e) => reject(new Error(e?.statusText || "网络请求失败")),
+                                        ontimeout: () => reject(new Error("连接超时 (15s)"))
+                                    });
+                                });
+                                const ms = Math.round(performance.now() - t0);
+                                if (resObj.status >= 200 && resObj.status < 300) {
+                                    logs.push(`✓ [Cloudflare R2] Worker 连接与鉴权成功 (HTTP ${resObj.status} · ${ms} ms)`);
+                                } else {
+                                    logs.push(`✕ [Cloudflare R2] Worker 返回 HTTP ${resObj.status} (${ms} ms)，请检查地址与密钥`);
+                                    hasErr = true;
+                                }
+                            } catch (e) {
+                                logs.push(`✕ [Cloudflare R2] 连接异常：${e?.message || e}`);
+                                hasErr = true;
+                            }
+                        }
+                    }
+
+                    setCloudStatus(logs.join("\n"), hasErr ? "error" : "success");
+                    testCloudBtn.disabled = false;
+                    testCloudBtn.textContent = "🔍 测试云端连接";
+                });
+
                 const saveCloudBtn = el("button", "mjj-btn is-primary", saveCloudRow);
                 saveCloudBtn.type = "button";
-                saveCloudBtn.textContent = "💾 保存云备份配置并立即同步";
+                saveCloudBtn.textContent = "💾 保存配置并立即同步";
                 saveCloudBtn.addEventListener("click", async () => {
                     const wdOn = webdavSw.input.checked;
                     const r2On = r2Sw.input.checked;
@@ -3565,13 +3958,15 @@ html.dark-layout #mjj-cc-overlay {
                     const r2Cfg = {
                         workerBaseUrl: r2UrlInp.value.trim(),
                         authToken: r2TokenInp.value.trim(),
-                        basePath: r2PathInp.value.trim() || "/nodeseek_chat_backup/"
+                        basePath: r2PathInp.value.trim() || "/ns_df_messages_backup/"
                     };
                     if (wdOn && (!wdCfg.serverUrl || !wdCfg.username || !wdCfg.password)) {
-                        return ctx.ui.alert?.("提示", "已开启 WebDAV 备份，请填写完整的服务器地址、用户名与密码");
+                        setCloudStatus("✕ 已开启 WebDAV 备份通道，请完整填写服务器地址、用户名与应用密码。", "error");
+                        return;
                     }
-                    if (r2On && !r2Cfg.workerBaseUrl) {
-                        return ctx.ui.alert?.("提示", "已开启 Cloudflare R2 备份，请填写 Worker 地址");
+                    if (r2On && (!r2Cfg.workerBaseUrl || !r2Cfg.authToken)) {
+                        setCloudStatus("✕ 已开启 Cloudflare R2 备份通道，请完整填写 Worker 地址与 Bearer 鉴权密钥。", "error");
+                        return;
                     }
                     const numVal = Math.max(1, Math.min(365, parseInt(retNumInp.value, 10) || 30));
                     GM_setValue("backup_webdav_enabled", wdOn);
@@ -3586,20 +3981,72 @@ html.dark-layout #mjj-cc-overlay {
 
                     flashSaved("✓ 云备份配置已保存");
                     if (window.chatBackup && (wdOn || r2On)) {
+                        setCloudStatus("⏳ 配置已保存，正在向云端同步最新私信备份...", "warning");
                         try {
-                            await window.chatBackup.performBackup();
-                            window.chatBackup.ui?.showToast?.("云备份配置已保存并完成同步", "success");
+                            const res = await window.chatBackup.performBackup();
+                            if (res?.partial) {
+                                setCloudStatus(`⚠️ 配置已保存，部分通道同步异常：${res.message}`, "warning");
+                            } else {
+                                setCloudStatus("✓ 云备份配置已保存，且已完成首次云端同步！", "success");
+                            }
                         } catch (e) {
-                            window.chatBackup.ui?.showToast?.("配置已保存，但首次同步失败: " + (e?.message || e), "warning");
+                            setCloudStatus("✕ 配置已保存，但立即同步失败：" + (e?.message || e), "error");
                         }
                     } else {
-                        ctx.ui.success?.("私信云备份配置已保存");
+                        setCloudStatus("✓ 云备份配置已保存在本地。", "success");
                     }
                 });
 
                 tabEnterHooks.set("chat", () => {
                     renderEmbeddedChatList();
                 });
+
+                // 3.5 Standalone Unified Image Hosting & Upload Tab ("image")
+                const imagePane = addNavTab("image", "🖼️ 图床与上传", "5图床");
+                const imgHeaderCard = el("div", "mjj-suite-card", imagePane);
+                const imgHeaderTop = el("div", "mjj-suite-top", imgHeaderCard);
+                const imgHeaderTitle = el("div", "mjj-suite-title", imgHeaderTop);
+                imgHeaderTitle.innerHTML = `<span>🖼️ 统一多图床引擎与编辑器上传助手</span>`;
+                const imgHostStatusBadge = el("span", "mjj-cc-badge", imgHeaderTitle);
+                const refreshImgBadge = () => {
+                    const st = window.__nsxRuntime?.getImageHostStatus?.();
+                    imgHostStatusBadge.textContent = st?.summary || (store.get("image_upload.api_key", "") ? "NodeImage 已就绪" : "支持 5 大图床");
+                };
+                refreshImgBadge();
+
+                const imgEditorSw = createSwitchEl(store.get("image_upload.enabled", true), (on) => {
+                    commitValue("image_upload.enabled", on);
+                });
+                imgHeaderTop.appendChild(imgEditorSw.wrap);
+
+                const imgHeaderDesc = el("div", "mjj-suite-desc", imgHeaderCard);
+                imgHeaderDesc.textContent = "将「发帖/回帖编辑器传图助手」与「AI 画像卡片分享图床」统一整合。开启右上角开关后，在论坛编辑器中粘贴截图、拖拽图片或点击工具栏图片图标，将自动调用下方配置的图床上传并插入 Markdown。";
+
+                const imgQuickBar = el("div", "mjj-btn-row", imgHeaderCard);
+                const btnNodeImageLogin = el("button", "mjj-btn is-primary", imgQuickBar);
+                btnNodeImageLogin.type = "button";
+                btnNodeImageLogin.textContent = "🔑 登录 NodeImage 自动获取 API Key";
+                btnNodeImageLogin.addEventListener("click", () => {
+                    ensureAiReady();
+                    if (window.__nsxRuntime?.loginAndSyncNodeImageKey) {
+                        window.__nsxRuntime.loginAndSyncNodeImageKey(btnNodeImageLogin, refreshImgBadge);
+                    } else {
+                        localStorage.setItem("nodeimage_login_status", "login_pending");
+                        window.open("https://www.nodeimage.com", "_blank");
+                    }
+                });
+
+                const imageEmbedHost = el("div", "mjj-ai-embed-host mjj-image-embed-host", imagePane);
+                const mountImageIntoPane = () => {
+                    ensureAiReady();
+                    refreshImgBadge();
+                    if (window.__nsxRuntime?.mountImageSettingsInto) {
+                        window.__nsxRuntime.mountImageSettingsInto(imageEmbedHost, refreshImgBadge);
+                    } else {
+                        imageEmbedHost.innerHTML = `<div class="mjj-chat-empty">图床配置模块正在加载中，请刷新页面后重试。</div>`;
+                    }
+                };
+                tabEnterHooks.set("image", mountImageIntoPane);
 
                 // 4. Dynamic Category Panes
                 const isObj = v => v && typeof v === "object" && !Array.isArray(v);
@@ -3859,7 +4306,7 @@ html.dark-layout #mjj-cc-overlay {
                         return;
                     }
                     panes.forEach((pane, id) => {
-                        if (id === "overview" || id === "backup" || id === "ai" || id === "chat") {
+                        if (id === "overview" || id === "backup" || id === "ai" || id === "chat" || id === "image") {
                             pane.classList.remove("is-active");
                             return;
                         }
@@ -3945,17 +4392,17 @@ html.dark-layout #mjj-cc-overlay {
                 else advSettings(target[1]);
             };
             window.__nsxRuntime.getQuickStatus = () => {
-                const sMethod = store.get(`sign_in.${code}.method`, 0);
-                const sEnabled = store.get(`sign_in.${code}.enabled`, true);
-                const sIdx = !sEnabled ? 0 : (sMethod || 1);
+                const sIdx = getSignStateIdx();
                 const nt = !!store.get("open_post_in_new_tab.enabled", false);
                 const statsNow = collectLiveStats();
+                const imgSt = window.__nsxRuntime?.getImageHostStatus?.();
                 return {
-                    version: info.version || "1.3.0",
+                    version: info.version || "1.4.0",
                     signInText: `${signStates[sIdx]?.s1 || "🎲"} ${signStates[sIdx]?.s2 || "随机🍗"}`,
                     newTabEnabled: nt,
                     newTabText: nt ? "✅ 开启" : "❌ 关闭",
                     aiText: statsNow.aiText,
+                    imageHostText: imgSt?.summary || (store.get("image_upload.api_key", "") ? "NodeImage" : "5 大图床"),
                     levelCacheCount: statsNow.levelCacheCount
                 };
             };
@@ -5613,11 +6060,13 @@ html.dark-layout #mjj-cc-overlay {
                         setKey: key => {
                             ctx.store.set("image_upload.api_key", key);
                             APP.api.key = key;
+                            window.__nsxRuntime?.setNodeImageApiKey?.(key);
                             UI.updateState();
                         },
                         clearKey: () => {
                             ctx.store.set("image_upload.api_key", "");
                             APP.api.key = '';
+                            window.__nsxRuntime?.setNodeImageApiKey?.("");
                             UI.updateState();
                         },
                         endpoints: {
@@ -5729,13 +6178,23 @@ html.dark-layout #mjj-cc-overlay {
 
                 const setStatus = (cls, msg, ttl = 0) => { DOM.statusElements.forEach(el => { el.className = cls; el.textContent = msg; }); if (ttl) return Utils.delay(ttl).then(UI.updateState); };
 
+                const isUnifiedHostReady = () => {
+                    const st = window.__nsxRuntime?.getImageHostStatus?.();
+                    return Boolean(APP.api.key || st?.ready);
+                };
+
                 const UI = {
                     updateState: () => {
-                        const isLoggedIn = Boolean(APP.api.key);
-                        DOM.loginButtons.forEach(btn => { btn.style.display = isLoggedIn ? 'none' : 'inline-block'; });
+                        const st = window.__nsxRuntime?.getImageHostStatus?.();
+                        const isReady = Boolean(APP.api.key || st?.ready);
+                        DOM.loginButtons.forEach(btn => { btn.style.display = isReady ? 'none' : 'inline-block'; });
                         DOM.statusElements.forEach(el => {
-                            if (isLoggedIn) { el.className = STATUS.SUCCESS.class; el.textContent = MESSAGE.READY; }
-                            else { el.textContent = ''; }
+                            if (isReady) {
+                                el.className = STATUS.SUCCESS.class;
+                                el.textContent = st?.summary ? `图床就绪 (${st.summary})` : MESSAGE.READY;
+                            } else {
+                                el.textContent = '';
+                            }
                         });
                     },
                     openLogin: () => { APP.storage.set('loginStatus', 'login_pending'); window.open(APP.site.url, '_blank'); },
@@ -5756,19 +6215,36 @@ html.dark-layout #mjj-cc-overlay {
                             imgBtn.parentNode.replaceChild(newBtn, imgBtn);
                             newBtn.addEventListener('click', async () => {
                                 DOM.editor = document.activeElement?.closest?.('.CodeMirror') || DOM.editor;
-                                if (!APP.api.key || !(await Auth.checkLoginIfNeeded())) { UI.openLogin(); return; }
+                                if (!isUnifiedHostReady() && !(await Auth.checkLoginIfNeeded())) {
+                                    if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
+                                    else UI.openLogin();
+                                    return;
+                                }
                                 const targetCm = Utils.getActiveCodeMirror();
                                 Utils.createFileInput(files => ImageHandler.handleFiles(files, targetCm));
                             });
                         }
 
                         const statusEl = document.createElement('div'); statusEl.id = 'nodeimage-status'; statusEl.className = STATUS.INFO.class;
+                        statusEl.style.cursor = 'pointer';
+                        statusEl.title = '点击打开 MJJ 图床与上传设置';
+                        statusEl.addEventListener('click', () => window.__nsxRuntime?.openControlCenter?.("image"));
                         container.appendChild(statusEl); DOM.statusElements.add(statusEl);
-                        const loginBtn = document.createElement('div'); loginBtn.className = 'nodeimage-login-btn'; loginBtn.textContent = '登录 NodeImage';
-                        loginBtn.addEventListener('click', UI.openLogin); loginBtn.style.display = 'none';
+                        const loginBtn = document.createElement('div'); loginBtn.className = 'nodeimage-login-btn'; loginBtn.textContent = '配置图床 / 登录 NodeImage';
+                        loginBtn.addEventListener('click', () => {
+                            if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
+                            else UI.openLogin();
+                        });
+                        loginBtn.style.display = 'none';
                         container.appendChild(loginBtn); DOM.loginButtons.add(loginBtn);
                         UI.updateState();
                     }
+                };
+
+                window.__nsxRuntime ||= {};
+                window.__nsxRuntime.syncEditorImageHostState = (newKey) => {
+                    if (typeof newKey === "string") APP.api.key = newKey;
+                    UI.updateState();
                 };
 
                 const ImageHandler = {
@@ -5782,23 +6258,33 @@ html.dark-layout #mjj-cc-overlay {
                         else if (dt.items && dt.items.length) { files = Array.from(dt.items).filter(i => i.kind === 'file' && i.type.startsWith('image/')).map(i => i.getAsFile()).filter(Boolean); }
                         if (files.length) {
                             e.preventDefault(); e.stopPropagation();
-                            if (!APP.api.key) { UI.openLogin(); return; }
+                            if (!isUnifiedHostReady()) {
+                                if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
+                                else UI.openLogin();
+                                return;
+                            }
                             ImageHandler.handleFiles(files, targetCm);
                         }
                     },
                     handleFiles: (files, targetCm = null) => {
-                        if (!APP.api.key) { UI.openLogin(); return; }
+                        if (!isUnifiedHostReady()) {
+                            if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
+                            else UI.openLogin();
+                            return;
+                        }
                         files.filter(file => file?.type.startsWith('image/')).forEach(file => ImageHandler.uploadAndInsert(file, targetCm));
                     },
                     uploadAndInsert: async (file, targetCm = null) => {
                         setStatus(STATUS.INFO.class, MESSAGE.UPLOADING);
                         try {
-                            const result = await API.uploadImage(file);
+                            const result = window.__nsxRuntime?.uploadFileViaUnifiedImageHost
+                                ? await window.__nsxRuntime.uploadFileViaUnifiedImageHost(file)
+                                : await API.uploadImage(file);
                             ImageHandler.insertMarkdown(result.markdown, targetCm);
-                            await setStatus(STATUS.SUCCESS.class, MESSAGE.UPLOAD_SUCCESS, APP.statusTimeout);
+                            await setStatus(STATUS.SUCCESS.class, result.providerLabel ? `${result.providerLabel} 上传成功！` : MESSAGE.UPLOAD_SUCCESS, APP.statusTimeout);
                         } catch (error) {
                             if (error.message === MESSAGE.LOGIN_EXPIRED) await Auth.checkLoginIfNeeded(true);
-                            console.error('[NodeImage]', error);
+                            console.error('[ImageHost]', error);
                             await setStatus(STATUS.ERROR.class, `上传失败: ${error.message}`, APP.statusTimeout);
                             ctx.ui.error?.(`图片上传失败: ${error.message}`);
                         }
@@ -7158,12 +7644,14 @@ html.dark-layout #mjj-cc-overlay {
     const value = raw && typeof raw === "object" ? raw : {};
     const providers = value.providers && typeof value.providers === "object" ? value.providers : {};
     const legacyToken = String(legacyImageHost?.authToken || "").trim();
-    return {
+    const storeNodeImageKey = String(store?.get?.("image_upload.api_key", "") || "").trim();
+    const nodeImageKey = String(providers.nodeimage?.apiKey || storeNodeImageKey || "").trim();
+    const sanitized = {
       selectionMode: value.selectionMode === "rotation" ? "rotation" : "fixed",
       activeProvider: IMAGE_HOST_DEFS[value.activeProvider] ? value.activeProvider : defaults.activeProvider,
       providers: {
         sixteen: { authToken: String(providers.sixteen?.authToken || legacyToken || "").trim() },
-        nodeimage: { apiKey: String(providers.nodeimage?.apiKey || "").trim() },
+        nodeimage: { apiKey: nodeImageKey },
         imgbb: {
           apiKey: String(providers.imgbb?.apiKey || "").trim(),
           expirationSeconds: clampInt(providers.imgbb?.expirationSeconds, 0, 0, 15552000),
@@ -7172,6 +7660,10 @@ html.dark-layout #mjj-cc-overlay {
         catbox: { userHash: String(providers.catbox?.userHash || "").trim() },
       },
     };
+    if (!sanitized.providers[sanitized.activeProvider]?.authToken && !sanitized.providers[sanitized.activeProvider]?.apiKey && !sanitized.providers[sanitized.activeProvider]?.userHash && nodeImageKey) {
+      sanitized.activeProvider = "nodeimage";
+    }
+    return sanitized;
   }
 
   function loadAiSettings() {
@@ -7219,7 +7711,7 @@ html.dark-layout #mjj-cc-overlay {
       },
       customProfile,
       ui: {
-        settingsTab: ["ai", "analysis", "prompt", "image", "enhancement"].includes(raw?.ui?.settingsTab) ? raw.ui.settingsTab : "ai",
+        settingsTab: ["ai", "analysis", "prompt", "enhancement"].includes(raw?.ui?.settingsTab) ? raw.ui.settingsTab : "ai",
         settingsRect: raw?.ui?.settingsRect && typeof raw.ui.settingsRect === "object" ? raw.ui.settingsRect : null,
       },
       providers: {},
@@ -7245,13 +7737,17 @@ html.dark-layout #mjj-cc-overlay {
       },
       customProfile: sanitizeCustomProfile(settings?.customProfile),
       ui: {
-        settingsTab: ["ai", "analysis", "prompt", "image", "enhancement"].includes(settings?.ui?.settingsTab) ? settings.ui.settingsTab : "ai",
+        settingsTab: ["ai", "analysis", "prompt", "enhancement"].includes(settings?.ui?.settingsTab) ? settings.ui.settingsTab : "ai",
         settingsRect: settings?.ui?.settingsRect && typeof settings.ui.settingsRect === "object" ? settings.ui.settingsRect : null,
       },
       providers: {},
     };
     for (const id of Object.keys(PROVIDER_DEFS)) normalized.providers[id] = sanitizeProviderSettings(id, settings?.providers?.[id]);
     GM_setValue(SETTINGS_KEY, normalized);
+    const syncedNodeKey = String(normalized.imageHosting?.providers?.nodeimage?.apiKey || "").trim();
+    if (syncedNodeKey !== String(store?.get?.("image_upload.api_key", "") || "").trim()) {
+      store?.set?.("image_upload.api_key", syncedNodeKey);
+    }
     return normalized;
   }
 
@@ -8965,7 +9461,6 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     ["ai", "🤖 AI接口"],
     ["analysis", "📊 分析模式"],
     ["prompt", "✍️ 自定义画像"],
-    ["image", "🖼️ 图床"],
     ["enhancement", "🧩 页面增强"],
   ];
 
@@ -9430,7 +9925,8 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     return `轮换池：${configured.map((id) => IMAGE_HOST_DEFS[id].label).join("、")}。每轮随机打乱且每家最多一次，并尽量避免连续重复；本次选定后重试不会自动换图床。`;
   }
 
-  function renderImagePane(){
+  function renderImagePane(paneEl = settingsPaneEl, statusSetter = setSettingsStatus){
+    if(!settingsDraft) settingsDraft = cloneSettings(AI_SETTINGS);
     settingsDraft.imageHosting=sanitizeImageHosting(settingsDraft.imageHosting,settingsDraft.imageHost);
     const providerId=IMAGE_HOST_DEFS[settingsDraft.imageHosting.activeProvider]?settingsDraft.imageHosting.activeProvider:"sixteen";
     const def=IMAGE_HOST_DEFS[providerId];
@@ -9438,8 +9934,8 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     const credential=String(cfg?.[def.credentialKey]||"");
     const deletionNote=def.deleteMode==="api"?"支持使用当前凭据从插件内请求远端删除。":def.deleteMode==="page"?"上传后若服务返回删除页，插件只会打开该网页，不冒充 API 删除。":def.deleteMode==="conditional"?"匿名上传不能删除；填写 User Hash 后，插件可请求删除与该账号关联的文件。":"官方 API 未承诺插件内删除；历史中只能打开图片或删除本地记录。";
     const testButtonText=providerId==="freeimage"?"测试上传":providerId==="imgbb"?"测试上传（60 秒）":"测试上传与删除";
-    settingsPaneEl.innerHTML=`
-      <div class="ns-ai-settings-note">图片上传完全可选。脚本支持 16 图床、NodeImage、ImgBB、FreeImage.host 和 Catbox；不会内置开发者 API Key。轮换用于分散正常上传请求，但不保证避免服务限流，请遵守各图床规则。</div>
+    paneEl.innerHTML=`
+      <div class="ns-ai-settings-note">多图床引擎同时驱动「发帖/回帖编辑器传图助手」与「AI 画像卡片分享」。支持 16 图床、NodeImage、ImgBB、FreeImage.host 和 Catbox；不会内置开发者 API Key。轮换用于分散正常上传请求，请遵守各图床规则。</div>
       <div class="ns-ai-settings-current"><div class="ns-ai-settings-label">图床选择模式</div><select class="ns-ai-settings-select ns-ai-image-selection-mode"><option value="fixed" ${settingsDraft.imageHosting.selectionMode==="fixed"?"selected":""}>固定默认图床</option><option value="rotation" ${settingsDraft.imageHosting.selectionMode==="rotation"?"selected":""}>随机轮换已配置图床</option></select></div>
       <div class="ns-ai-settings-note ns-ai-image-rotation-summary">${imageHostSelectionSummary(settingsDraft)}</div>
       <div class="ns-ai-settings-current"><div class="ns-ai-settings-label">${settingsDraft.imageHosting.selectionMode==="rotation"?"默认 / 兜底图床":"默认图床"}</div><select class="ns-ai-settings-select ns-ai-image-provider">${Object.entries(IMAGE_HOST_DEFS).map(([id,item])=>`<option value="${id}" ${id===providerId?"selected":""}>${item.label}</option>`).join("")}</select></div>
@@ -9447,30 +9943,30 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
         <div class="ns-ai-settings-card-head"><div class="ns-ai-settings-provider-name">${def.label}</div><a class="ns-ai-small-btn" href="${def.applyUrl}" target="_blank" rel="noopener noreferrer">申请 / 使用说明</a></div>
         <div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>${def.credentialLabel}</span><span class="ns-ai-settings-help">${def.credentialHelp}</span></div><div class="ns-ai-share-token-row"><input class="ns-ai-settings-input ns-ai-image-credential" type="password" autocomplete="off"><button class="ns-ai-small-btn ns-ai-image-credential-toggle" type="button">显示</button>${providerId==="sixteen"?'<button class="ns-ai-small-btn ns-ai-image-token-random" type="button">随机生成</button>':""}</div></div>
         ${providerId==="imgbb"?`<div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>自动过期（秒）</span><span class="ns-ai-settings-help">0 表示不过期；可填 60–15552000</span></div><input class="ns-ai-settings-input ns-ai-imgbb-expiration" type="number" min="0" max="15552000" value="${cfg.expirationSeconds||0}"></div>`:""}
-        <div class="ns-ai-settings-note">${deletionNote} 凭据保存在 Tampermonkey 本地；上传时只发送给所选图床。</div>
+        <div class="ns-ai-settings-note">${deletionNote} 凭据保存在本地存储；上传时只发送给所选图床。</div>
         <div class="ns-ai-image-test-box">
           <div class="ns-ai-settings-card-head"><div><div class="ns-ai-upload-history-title">图床连通性测试</div><div class="ns-ai-settings-help">浏览器本地生成 360×280 的随机 PNG（通常约 300 KB，不含论坛内容），测试上传；服务支持 API 删除时继续测试删除。不会再次下载图片，避免 CDN / 反爬策略造成长时间等待。每次点击只运行一轮。</div></div><button class="ns-ai-small-btn ns-ai-image-test" type="button" ${imageHostTestBusy?"disabled":""}>${testButtonText}</button></div>
           <div class="ns-ai-provider-test-status ns-ai-image-test-status"></div>
         </div>
-        <div class="ns-ai-upload-history"><div class="ns-ai-upload-history-title">最近上传</div><div class="ns-ai-upload-history-list"></div></div>
+        <div class="ns-ai-upload-history"><div class="ns-ai-upload-history-title">最近上传（含编辑器传图与 AI 画像分享）</div><div class="ns-ai-upload-history-list"></div></div>
       </div>`;
-    const input=settingsPaneEl.querySelector(".ns-ai-image-credential");input.value=credential;settingsUploadHistoryEl=settingsPaneEl.querySelector(".ns-ai-upload-history-list");renderUploadHistorySettings();
-    settingsPaneEl.querySelector(".ns-ai-image-selection-mode").addEventListener("change",e=>{settingsDraft.imageHosting.selectionMode=e.currentTarget.value;renderImagePane();setSettingsStatus();});
-    settingsPaneEl.querySelector(".ns-ai-image-provider").addEventListener("change",e=>{settingsDraft.imageHosting.activeProvider=e.currentTarget.value;renderImagePane();setSettingsStatus();});
-    input.addEventListener("input",()=>{settingsDraft.imageHosting.providers[providerId][def.credentialKey]=input.value;settingsPaneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);setSettingsStatus();});
-    settingsPaneEl.querySelector(".ns-ai-image-credential-toggle").addEventListener("click",e=>{const show=input.type==="text";input.type=show?"password":"text";e.currentTarget.textContent=show?"显示":"隐藏";});
-    settingsPaneEl.querySelector(".ns-ai-image-token-random")?.addEventListener("click",()=>{if(input.value&&readUploadHistory().some(item=>(item.providerId||"sixteen")==="sixteen")&&!confirm("当前已有 16 图床上传历史。更换 Auth-Token 后，旧图片可能需要原 Token 才能删除。仍要生成新 Token 吗？"))return;const token=generateRandomAuthToken();input.value=token;settingsDraft.imageHosting.providers.sixteen.authToken=token;settingsPaneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);setSettingsStatus("✓ 已生成随机 Auth-Token。保存后生效。","success");});
-    settingsPaneEl.querySelector(".ns-ai-imgbb-expiration")?.addEventListener("input",e=>{settingsDraft.imageHosting.providers.imgbb.expirationSeconds=Number(e.currentTarget.value);setSettingsStatus();});
-    settingsPaneEl.querySelector(".ns-ai-image-test").addEventListener("click",e=>runImageHostConnectivityTest(providerId,e.currentTarget,settingsPaneEl.querySelector(".ns-ai-image-test-status")));
+    const input=paneEl.querySelector(".ns-ai-image-credential");input.value=credential;settingsUploadHistoryEl=paneEl.querySelector(".ns-ai-upload-history-list");renderUploadHistorySettings(statusSetter);
+    paneEl.querySelector(".ns-ai-image-selection-mode").addEventListener("change",e=>{settingsDraft.imageHosting.selectionMode=e.currentTarget.value;renderImagePane(paneEl,statusSetter);statusSetter();});
+    paneEl.querySelector(".ns-ai-image-provider").addEventListener("change",e=>{settingsDraft.imageHosting.activeProvider=e.currentTarget.value;renderImagePane(paneEl,statusSetter);statusSetter();});
+    input.addEventListener("input",()=>{settingsDraft.imageHosting.providers[providerId][def.credentialKey]=input.value;paneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);statusSetter();});
+    paneEl.querySelector(".ns-ai-image-credential-toggle").addEventListener("click",e=>{const show=input.type==="text";input.type=show?"password":"text";e.currentTarget.textContent=show?"显示":"隐藏";});
+    paneEl.querySelector(".ns-ai-image-token-random")?.addEventListener("click",()=>{if(input.value&&readUploadHistory().some(item=>(item.providerId||"sixteen")==="sixteen")&&!confirm("当前已有 16 图床上传历史。更换 Auth-Token 后，旧图片可能需要原 Token 才能删除。仍要生成新 Token 吗？"))return;const token=generateRandomAuthToken();input.value=token;settingsDraft.imageHosting.providers.sixteen.authToken=token;paneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);statusSetter("✓ 已生成随机 Auth-Token。保存后生效。","success");});
+    paneEl.querySelector(".ns-ai-imgbb-expiration")?.addEventListener("input",e=>{settingsDraft.imageHosting.providers.imgbb.expirationSeconds=Number(e.currentTarget.value);statusSetter();});
+    paneEl.querySelector(".ns-ai-image-test").addEventListener("click",e=>runImageHostConnectivityTest(providerId,e.currentTarget,paneEl.querySelector(".ns-ai-image-test-status")));
   }
 
-  function renderUploadHistorySettings(){
+  function renderUploadHistorySettings(statusSetter = setSettingsStatus){
     if(!settingsUploadHistoryEl)return;settingsUploadHistoryEl.textContent="";const rows=readUploadHistory();
     if(!rows.length){const e=document.createElement("div");e.className="ns-ai-upload-history-empty";e.textContent="暂无通过本脚本上传的图片记录。";settingsUploadHistoryEl.appendChild(e);return;}
     for(const item of rows){const providerId=item?.providerId||"sixteen";const provider=IMAGE_HOST_DEFS[providerId]||{label:providerId};const row=document.createElement("div");row.className="ns-ai-upload-history-row";const main=document.createElement("div");main.className="ns-ai-upload-history-main";const name=document.createElement("div");name.className="ns-ai-upload-history-name";name.textContent=`[${provider.label}] ${item.title||item.imageUrl||"NodeSeek AI 图片"}`;name.title=item.imageUrl||"";const time=document.createElement("div");time.className="ns-ai-upload-history-time";time.textContent=formatHistoryTime(item.createdAt);main.append(name,time);const actions=document.createElement("div");actions.className="ns-ai-upload-history-actions";
       const open=document.createElement("button");open.className="ns-ai-small-btn";open.type="button";open.textContent="打开";open.onclick=()=>{if(item.imageUrl)window.open(item.imageUrl,"_blank","noopener,noreferrer");};
-      const cp=document.createElement("button");cp.className="ns-ai-small-btn";cp.type="button";cp.textContent="复制MD";cp.onclick=()=>{copyText(item.markdown||`![NodeSeek AI 画像](${item.imageUrl||""})`);setSettingsStatus("✓ Markdown 已复制。","success");};
-      const del=document.createElement("button");del.className="ns-ai-small-btn";del.type="button";const deleteMode=item.deleteMode||provider.deleteMode||"none";del.textContent=deleteMode==="page"?"删除页":deleteMode==="api"?"远端删除":"删本地";del.onclick=async()=>{if(deleteMode==="page"&&item.deleteUrl){window.open(item.deleteUrl,"_blank","noopener,noreferrer");return;}if(deleteMode!=="api"){if(confirm("该记录不支持插件内远端删除。是否只删除本地历史记录？图片仍可能保留在图床。"))removeUploadHistoryLocal(item.id);return;}if(!confirm("确定请求图床远端删除这张图片吗？删除后通常无法恢复。"))return;try{del.disabled=true;setSettingsStatus(`正在请求 ${provider.label} 删除图片…`);await deleteUploadedImage(item,settingsDraft||AI_SETTINGS);removeUploadHistoryLocal(item.id);setSettingsStatus("✓ 远端图片已删除。","success");}catch(error){setSettingsStatus(`✕ 删除失败：${error?.message||"未知错误"}`,"error");}finally{del.disabled=false;}};
+      const cp=document.createElement("button");cp.className="ns-ai-small-btn";cp.type="button";cp.textContent="复制MD";cp.onclick=()=>{copyText(item.markdown||`![NodeSeek AI 画像](${item.imageUrl||""})`);statusSetter("✓ Markdown 已复制。","success");};
+      const del=document.createElement("button");del.className="ns-ai-small-btn";del.type="button";const deleteMode=item.deleteMode||provider.deleteMode||"none";del.textContent=deleteMode==="page"?"删除页":deleteMode==="api"?"远端删除":"删本地";del.onclick=async()=>{if(deleteMode==="page"&&item.deleteUrl){window.open(item.deleteUrl,"_blank","noopener,noreferrer");return;}if(deleteMode!=="api"){if(confirm("该记录不支持插件内远端删除。是否只删除本地历史记录？图片仍可能保留在图床。"))removeUploadHistoryLocal(item.id);return;}if(!confirm("确定请求图床远端删除这张图片吗？删除后通常无法恢复。"))return;try{del.disabled=true;statusSetter(`正在请求 ${provider.label} 删除图片…`);await deleteUploadedImage(item,settingsDraft||AI_SETTINGS);removeUploadHistoryLocal(item.id);statusSetter("✓ 远端图片已删除。","success");}catch(error){statusSetter(`✕ 删除失败：${error?.message||"未知错误"}`,"error");}finally{del.disabled=false;}};
       actions.append(open,cp,del);if(deleteMode==="page"){const local=document.createElement("button");local.className="ns-ai-small-btn";local.type="button";local.textContent="移除记录";local.onclick=()=>{if(confirm("只移除本地上传历史？这不会删除图床中的图片。"))removeUploadHistoryLocal(item.id);};actions.appendChild(local);}row.append(main,actions);settingsUploadHistoryEl.appendChild(row);
     }
   }
@@ -9636,8 +10132,212 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   settingsCloseEl.addEventListener("click",tryCloseSettings);settingsCancelEl.addEventListener("click",tryCloseSettings);
   settingsOverlay.addEventListener("click",(e)=>{if(e.target===settingsOverlay)e.stopPropagation();});settingsDialogEl.addEventListener("click",e=>e.stopPropagation());
   settingsOpenEl.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openSettingsModal(AI_PROVIDER);});
+  let lastImageMountHost = null;
+  let lastImageBadgeUpdater = null;
+
+  function mountImageSettingsInto(hostEl, onUpdateBadge = null) {
+    if (!hostEl) return;
+    lastImageMountHost = hostEl;
+    if (typeof onUpdateBadge === "function") lastImageBadgeUpdater = onUpdateBadge;
+    if (!settingsDraft) settingsDraft = cloneSettings(AI_SETTINGS);
+    settingsDraft.imageHosting = sanitizeImageHosting(AI_SETTINGS.imageHosting, AI_SETTINGS.imageHost);
+
+    hostEl.innerHTML = `
+      <div class="ns-ai-dialog mjj-embedded-ai">
+        <div class="ns-ai-settings-body">
+          <div class="ns-ai-settings-pane mjj-standalone-image-pane"></div>
+        </div>
+        <div class="ns-ai-settings-foot">
+          <div class="ns-ai-settings-status mjj-standalone-image-status"></div>
+          <div class="ns-ai-settings-foot-actions">
+            <button class="ns-ai-btn mjj-img-reset-btn" type="button">还原修改</button>
+            <button class="ns-ai-btn primary mjj-img-save-btn" type="button">💾 保存图床配置</button>
+          </div>
+        </div>
+      </div>`;
+    const imgPaneEl = hostEl.querySelector(".mjj-standalone-image-pane");
+    const imgStatusEl = hostEl.querySelector(".mjj-standalone-image-status");
+    const setImgStatus = (msg = "", type = "") => {
+      if (!imgStatusEl) return;
+      imgStatusEl.textContent = msg;
+      imgStatusEl.className = `ns-ai-settings-status mjj-standalone-image-status ${type}`.trim();
+    };
+    renderImagePane(imgPaneEl, setImgStatus);
+
+    hostEl.querySelector(".mjj-img-reset-btn")?.addEventListener("click", () => {
+      settingsDraft.imageHosting = sanitizeImageHosting(AI_SETTINGS.imageHosting, AI_SETTINGS.imageHost);
+      renderImagePane(imgPaneEl, setImgStatus);
+      setImgStatus("已还原未保存的图床修改。", "warning");
+    });
+
+    hostEl.querySelector(".mjj-img-save-btn")?.addEventListener("click", () => {
+      try {
+        AI_SETTINGS.imageHosting = sanitizeImageHosting(settingsDraft.imageHosting, settingsDraft.imageHost);
+        AI_SETTINGS = saveAiSettings(AI_SETTINGS);
+        const nodeKey = String(AI_SETTINGS.imageHosting?.providers?.nodeimage?.apiKey || "").trim();
+        window.__nsxRuntime?.syncEditorImageHostState?.(nodeKey);
+        lastImageBadgeUpdater?.();
+        setImgStatus("✓ 图床配置已保存并立即生效（发帖/回帖编辑器传图与 AI 画像分享同步生效）！", "success");
+        window.__nsxRuntime?.flashControlCenterSaved?.("✓ 图床配置已保存并生效");
+      } catch (err) {
+        setImgStatus(err?.message || "图床配置保存失败。", "error");
+      }
+    });
+  }
+
+  function getImageHostStatus() {
+    const imgCfg = sanitizeImageHosting(AI_SETTINGS?.imageHosting, AI_SETTINGS?.imageHost);
+    const configured = configuredImageHostIds({ ...AI_SETTINGS, imageHosting: imgCfg });
+    const activeId = IMAGE_HOST_DEFS[imgCfg.activeProvider] ? imgCfg.activeProvider : "sixteen";
+    const activeReady = imageHostReady(activeId, { ...AI_SETTINGS, imageHosting: imgCfg });
+    const ready = configured.length > 0 || activeId === "catbox";
+    let summary = "未配置凭据";
+    if (imgCfg.selectionMode === "rotation" && configured.length > 0) {
+      summary = `轮换 (${configured.length}图床)`;
+    } else if (activeReady) {
+      summary = `${IMAGE_HOST_DEFS[activeId].label} 已就绪`;
+    } else if (configured.length > 0) {
+      summary = `${IMAGE_HOST_DEFS[configured[0]].label} 已就绪`;
+    }
+    return {
+      ready,
+      activeProvider: activeId,
+      configuredCount: configured.length,
+      summary
+    };
+  }
+
+  function setNodeImageApiKey(key) {
+    const clean = String(key || "").trim();
+    if (!AI_SETTINGS.imageHosting) AI_SETTINGS.imageHosting = makeDefaultSettings().imageHosting;
+    AI_SETTINGS.imageHosting.providers.nodeimage.apiKey = clean;
+    if (clean && !configuredImageHostIds(AI_SETTINGS).some((id) => id !== "nodeimage")) {
+      AI_SETTINGS.imageHosting.activeProvider = "nodeimage";
+    }
+    AI_SETTINGS = saveAiSettings(AI_SETTINGS);
+    if (settingsDraft?.imageHosting?.providers?.nodeimage) {
+      settingsDraft.imageHosting.providers.nodeimage.apiKey = clean;
+      if (clean) settingsDraft.imageHosting.activeProvider = "nodeimage";
+    }
+    window.__nsxRuntime?.syncEditorImageHostState?.(clean);
+    lastImageBadgeUpdater?.();
+    if (lastImageMountHost && document.body.contains(lastImageMountHost)) {
+      mountImageSettingsInto(lastImageMountHost, lastImageBadgeUpdater);
+    }
+  }
+
+  function loginAndSyncNodeImageKey(btnEl = null, onUpdateBadge = null) {
+    if (typeof onUpdateBadge === "function") lastImageBadgeUpdater = onUpdateBadge;
+    const origText = btnEl?.textContent || "🔑 登录 NodeImage 自动获取 API Key";
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.textContent = "⏳ 正在检查 NodeImage 登录状态...";
+    }
+    const checkKeyOnce = () => new Promise((resolve) => {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url: "https://api.nodeimage.com/api/user/api-key",
+        headers: { Accept: "application/json" },
+        withCredentials: true,
+        responseType: "json",
+        onload(res) {
+          let data = res.response;
+          if (!data && res.responseText) {
+            try { data = JSON.parse(res.responseText); } catch {}
+          }
+          if (res.status === 200 && data?.api_key) {
+            resolve(String(data.api_key).trim());
+          } else {
+            resolve("");
+          }
+        },
+        onerror() { resolve(""); }
+      });
+    });
+
+    checkKeyOnce().then((existingKey) => {
+      if (existingKey) {
+        setNodeImageApiKey(existingKey);
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.textContent = "✓ 已自动获取并绑定 NodeImage API Key";
+          setTimeout(() => { btnEl.textContent = origText; }, 3000);
+        }
+        window.__nsxRuntime?.flashControlCenterSaved?.("✓ NodeImage API Key 已自动同步");
+        return;
+      }
+      localStorage.setItem("nodeimage_login_status", "login_pending");
+      window.open("https://www.nodeimage.com", "_blank");
+      if (btnEl) {
+        btnEl.textContent = "⏳ 等待登录 NodeImage (完成后自动同步)...";
+      }
+      let attempts = 0;
+      const timer = setInterval(async () => {
+        attempts += 1;
+        const k = await checkKeyOnce();
+        if (k) {
+          clearInterval(timer);
+          localStorage.removeItem("nodeimage_login_status");
+          setNodeImageApiKey(k);
+          if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.textContent = "✓ 已自动获取并绑定 NodeImage API Key";
+            setTimeout(() => { btnEl.textContent = origText; }, 3000);
+          }
+          window.__nsxRuntime?.flashControlCenterSaved?.("✓ NodeImage API Key 已自动同步");
+        } else if (attempts >= 40) {
+          clearInterval(timer);
+          if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.textContent = origText;
+          }
+        }
+      }, 3000);
+    });
+  }
+
+  async function uploadFileViaUnifiedImageHost(file) {
+    const chosen = chooseImageHostForShare(AI_SETTINGS);
+    let providerId = chosen.providerId;
+    if (!imageHostReady(providerId, AI_SETTINGS)) {
+      const configured = configuredImageHostIds(AI_SETTINGS);
+      if (configured.length > 0) providerId = configured[0];
+    }
+    const def = IMAGE_HOST_DEFS[providerId] || IMAGE_HOST_DEFS.sixteen;
+    const filename = file?.name || imageFileName();
+    const uploaded = await uploadImageToProvider(providerId, file, filename, { settings: AI_SETTINGS });
+    const markdown = `![${file?.name || "image"}](${uploaded.imageUrl})`;
+    addUploadHistory({
+      id: `editor-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      createdAt: Date.now(),
+      title: `编辑器传图 · ${filename}`,
+      providerId,
+      imageUrl: uploaded.imageUrl,
+      viewerUrl: uploaded.viewerUrl,
+      resourceId: uploaded.resourceId,
+      deleteMode: uploaded.deleteMode,
+      deleteUrl: uploaded.deleteUrl,
+      markdown,
+      mode: "editor",
+      uid: "",
+      username: "",
+    });
+    renderUploadHistorySettings();
+    return {
+      url: uploaded.imageUrl,
+      markdown,
+      providerId,
+      providerLabel: def.label,
+    };
+  }
+
   window.__nsxRuntime ||= {};
   window.__nsxRuntime.mountAiSettingsInto = mountAiSettingsInto;
+  window.__nsxRuntime.mountImageSettingsInto = mountImageSettingsInto;
+  window.__nsxRuntime.getImageHostStatus = getImageHostStatus;
+  window.__nsxRuntime.setNodeImageApiKey = setNodeImageApiKey;
+  window.__nsxRuntime.loginAndSyncNodeImageKey = loginAndSyncNodeImageKey;
+  window.__nsxRuntime.uploadFileViaUnifiedImageHost = uploadFileViaUnifiedImageHost;
   window.__nsxRuntime.openAiSettings = () => openSettingsModal(AI_PROVIDER);
   window.__nsxRuntime.getAiStatusSummary = () => ({
     provider: AI_PROVIDER,
@@ -9783,7 +10483,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     shareUploadEl.textContent = `上传 ${def.shortLabel} 并复制 Markdown`;
     shareProviderHelpEl.textContent = anonymous ? "匿名上传不可删除" : ready ? "凭据已配置" : `尚未配置 ${def.credentialLabel}`;
     setShareStatus(
-      `当前：${currentShareTitle()}\n${selectionLine}\n${def.label}：${anonymous ? "将匿名上传；远端图片无法由插件删除" : ready ? "已可用" : `请先在设置 → 图床中填写 ${def.credentialLabel}`}\n上传超时不会自动切换其他图床，避免生成重复公开副本。`,
+      `当前：${currentShareTitle()}\n${selectionLine}\n${def.label}：${anonymous ? "将匿名上传；远端图片无法由插件删除" : ready ? "已可用" : `请先在 MJJ 控制中心 → 🖼️ 图床与上传 中填写 ${def.credentialLabel}`}\n上传超时不会自动切换其他图床，避免生成重复公开副本。`,
       ready ? (anonymous ? "warning" : "") : "warning",
     );
   }
@@ -10412,7 +11112,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     const providerId = IMAGE_HOST_DEFS[shareProviderEl.value] ? shareProviderEl.value : "sixteen";
     const def = IMAGE_HOST_DEFS[providerId];
     if (!imageHostReady(providerId)) {
-      setShareStatus(`尚未配置 ${def.label} 的 ${def.credentialLabel}。请先在 ⚙️ 插件设置 → 🖼️ 图床中填写并保存，或改选其他图床。`, "error");
+      setShareStatus(`尚未配置 ${def.label} 的 ${def.credentialLabel}。请先在 MJJ 控制中心 → 🖼️ 图床与上传 中填写并保存，或改选其他图床。`, "error");
       return;
     }
 
