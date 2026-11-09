@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MJJ",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "NodeSeek / DeepFlood 全能增强插件：集成 Nodeseek Pro、低等级发帖模糊屏蔽、用户 AI 画像与深度交易分析、私信本地缓存与 WebDAV/R2 备份。",
   "icons": {
     "16": "icons/icon16.png",
@@ -20,8 +20,18 @@
     "storage",
     "notifications",
     "clipboardWrite",
-    "tabs"
+    "tabs",
+    "declarativeNetRequest"
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_cors",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "host_permissions": [
     "<all_urls>"
   ],

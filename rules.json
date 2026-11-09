@@ -1,0 +1,43 @@
+[
+  {
+    "id": 1,
+    "priority": 10,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "Origin",
+          "operation": "set",
+          "value": "https://www.nodeseek.com"
+        },
+        {
+          "header": "Referer",
+          "operation": "set",
+          "value": "https://www.nodeseek.com/"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||nodeimage.com/",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "Origin",
+          "operation": "remove"
+        }
+      ]
+    },
+    "condition": {
+      "tabIds": [-1],
+      "excludedRequestDomains": ["nodeimage.com"],
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]

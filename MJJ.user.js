@@ -2,7 +2,7 @@
 // @name         MJJ
 // @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、多图床上传、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
-// @version      1.4.2
+// @version      1.4.3
 // @match        *://www.nodeseek.com/*
 // @match        *://www.deepflood.com/*
 // @require      https://s4.zstatic.net/ajax/libs/layui/2.10.3/layui.min.js
@@ -1938,9 +1938,9 @@ html.dark-layout #mjj-cc-overlay {
     border: 1px solid var(--mjj-border);
 }
 .mjj-cc-nav-btn.is-active .mjj-cc-nav-count {
-    background: var(--mjj-accent);
-    color: #fff;
-    border-color: var(--mjj-accent);
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+    border-color: rgba(16, 185, 129, 0.35);
 }
 .mjj-cc-sidebar-footer {
     display: flex;
@@ -2001,7 +2001,7 @@ html.dark-layout #mjj-cc-overlay {
     justify-content: space-between;
 }
 .mjj-stat-val {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--mjj-text);
     white-space: nowrap;
@@ -2065,14 +2065,14 @@ html.dark-layout #mjj-cc-overlay {
     background: var(--mjj-accent-soft);
 }
 .mjj-btn.is-primary {
-    background: var(--mjj-accent);
-    border-color: var(--mjj-accent);
-    color: #fff;
+    background: var(--mjj-bg-sub);
+    border-color: var(--mjj-border);
+    color: var(--mjj-text);
 }
 .mjj-btn.is-primary:hover {
-    background: var(--mjj-accent-hover);
-    border-color: var(--mjj-accent-hover);
-    color: #fff;
+    background: var(--mjj-accent-soft);
+    border-color: var(--mjj-accent);
+    color: var(--mjj-accent);
 }
 .mjj-card {
     background: var(--mjj-bg-card);
@@ -2258,9 +2258,9 @@ html.dark-layout #mjj-cc-overlay {
     transition: all 0.14s ease;
 }
 .mjj-seg-btn.is-active {
-    background: var(--mjj-accent);
-    color: #fff;
-    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.35);
 }
 /* Color Picker */
 .mjj-color-wrap {
@@ -2387,9 +2387,9 @@ html.dark-layout #mjj-cc-overlay {
 }
 .ns-ai-settings-dialog .ns-ai-settings-main-tab.active,
 .ns-ai-settings-dialog .ns-ai-settings-tab.active {
-    background: var(--mjj-accent) !important;
-    color: #fff !important;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.28) !important;
+    background: var(--mjj-accent-soft) !important;
+    color: var(--mjj-accent) !important;
+    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.35) !important;
 }
 .ns-ai-settings-dialog .ns-ai-settings-card,
 .ns-ai-settings-dialog .ns-ai-mode-card,
@@ -2439,12 +2439,16 @@ html.dark-layout #mjj-cc-overlay {
     margin-left: auto !important;
 }
 .ns-ai-settings-dialog .ns-ai-btn,
+.ns-ai-settings-dialog .ns-ai-settings-action,
+.ns-ai-settings-dialog .ns-ai-small-btn,
 #ns-ai-profile-panel .ns-ai-btn,
+#ns-ai-profile-panel .ns-ai-button,
 .ns-ai-share-dialog .ns-ai-btn,
+.ns-ai-share-dialog .ns-ai-share-action,
 .ns-ai-moderation-dialog .ns-ai-btn {
     border-radius: 8px !important;
     border: 1px solid var(--mjj-border) !important;
-    background: var(--mjj-bg-card) !important;
+    background: var(--mjj-bg-sub) !important;
     color: var(--mjj-text) !important;
     padding: 7px 13px !important;
     font-size: 12.5px !important;
@@ -2453,8 +2457,12 @@ html.dark-layout #mjj-cc-overlay {
     transition: all 0.15s ease !important;
 }
 .ns-ai-settings-dialog .ns-ai-btn:hover,
+.ns-ai-settings-dialog .ns-ai-settings-action:hover,
+.ns-ai-settings-dialog .ns-ai-small-btn:hover,
 #ns-ai-profile-panel .ns-ai-btn:hover,
+#ns-ai-profile-panel .ns-ai-button:hover,
 .ns-ai-share-dialog .ns-ai-btn:hover,
+.ns-ai-share-dialog .ns-ai-share-action:hover,
 .ns-ai-moderation-dialog .ns-ai-btn:hover {
     border-color: var(--mjj-accent) !important;
     color: var(--mjj-accent) !important;
@@ -2462,21 +2470,27 @@ html.dark-layout #mjj-cc-overlay {
 }
 .ns-ai-settings-dialog .ns-ai-btn.primary,
 .ns-ai-settings-dialog .ns-ai-btn-primary,
+.ns-ai-settings-dialog .ns-ai-settings-action.primary,
 #ns-ai-profile-panel .ns-ai-btn-primary,
+#ns-ai-profile-panel .ns-ai-button.primary,
 .ns-ai-share-dialog .ns-ai-btn-primary,
+.ns-ai-share-dialog .ns-ai-share-action.primary,
 .ns-ai-moderation-dialog .ns-ai-btn-primary {
-    background: var(--mjj-accent) !important;
-    border-color: var(--mjj-accent) !important;
-    color: #fff !important;
+    background: var(--mjj-bg-sub) !important;
+    border-color: var(--mjj-border) !important;
+    color: var(--mjj-text) !important;
 }
 .ns-ai-settings-dialog .ns-ai-btn.primary:hover,
 .ns-ai-settings-dialog .ns-ai-btn-primary:hover,
+.ns-ai-settings-dialog .ns-ai-settings-action.primary:hover,
 #ns-ai-profile-panel .ns-ai-btn-primary:hover,
+#ns-ai-profile-panel .ns-ai-button.primary:hover,
 .ns-ai-share-dialog .ns-ai-btn-primary:hover,
+.ns-ai-share-dialog .ns-ai-share-action.primary:hover,
 .ns-ai-moderation-dialog .ns-ai-btn-primary:hover {
-    background: var(--mjj-accent-hover) !important;
-    border-color: var(--mjj-accent-hover) !important;
-    color: #fff !important;
+    background: var(--mjj-accent-soft) !important;
+    border-color: var(--mjj-accent) !important;
+    color: var(--mjj-accent) !important;
 }
 
 /* AI 画像分析结果悬浮窗、分享弹窗、悬停卡片统一 MJJ 风格 */
@@ -2846,15 +2860,17 @@ html.dark-layout #mjj-cc-overlay {
 .nodeseek-btn,
 .nodeseek-history-btn {
     border-radius: 8px !important;
-    background: var(--mjj-accent) !important;
-    color: #fff !important;
-    border: 1px solid var(--mjj-accent) !important;
+    background: var(--mjj-bg-sub) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
     font-weight: 600 !important;
+    transition: all 0.15s ease !important;
 }
 .nodeseek-btn:hover,
 .nodeseek-history-btn:hover {
-    background: var(--mjj-accent-hover) !important;
-    border-color: var(--mjj-accent-hover) !important;
+    background: var(--mjj-accent-soft) !important;
+    border-color: var(--mjj-accent) !important;
+    color: var(--mjj-accent) !important;
 }
 #nsx-filter-panel,
 #nsx-rel-panel,
@@ -3193,14 +3209,17 @@ html.dark-layout #mjj-cc-overlay {
                 try {
                     const aiSummary = window.__nsxRuntime?.getAiStatusSummary?.();
                     if (aiSummary?.displayName) {
-                        aiText = aiSummary.displayName;
-                        aiSub = aiSummary.customEnabled ? "已启用自定义 Prompt" : "标准 AI 画像模式";
+                        aiText = aiSummary.model || aiSummary.providerLabel || aiSummary.displayName;
+                        const prov = aiSummary.providerLabel || aiSummary.provider || "AI";
+                        aiSub = `${prov} · ${aiSummary.customEnabled ? "自定义 Prompt" : "标准画像模式"}`;
                     } else {
                         const rawAi = GM_getValue("ns-ai-profile-v2.8-settings", null);
                         if (rawAi?.activeProvider) {
                             const p = rawAi.providers?.[rawAi.activeProvider];
-                            aiText = `${rawAi.activeProvider} · ${p?.model || "默认"}`;
-                            aiSub = p?.apiKey ? "API Key 已就绪" : "待填写 API Key";
+                            const provMap = { deepseek: "DeepSeek", openai: "OpenAI", "openai-compatible": "第三方兼容" };
+                            const provLabel = provMap[rawAi.activeProvider] || rawAi.activeProvider;
+                            aiText = p?.model || provLabel;
+                            aiSub = `${provLabel} · ${p?.apiKey ? "API Key 已就绪" : "待填写 API Key"}`;
                         }
                     }
                 } catch { }
@@ -3386,8 +3405,10 @@ html.dark-layout #mjj-cc-overlay {
                     lb.textContent = title;
                     const vl = el("div", "mjj-stat-val", sc);
                     vl.textContent = valText;
+                    vl.title = valText;
                     const sb = el("div", "mjj-stat-sub", sc);
                     sb.textContent = subText;
+                    sb.title = subText;
                     return { card: sc, valEl: vl, subEl: sb };
                 };
 
@@ -3498,7 +3519,7 @@ html.dark-layout #mjj-cc-overlay {
                 });
 
                 // 2. Embedded AI Settings Pane ("ai")
-                const aiPane = addNavTab("ai", "🤖 AI 画像设置", "AI");
+                const aiPane = addNavTab("ai", "🤖 AI 画像设置");
                 const aiHeaderCard = el("div", "mjj-suite-card", aiPane);
                 const aiHeaderTop = el("div", "mjj-suite-top", aiHeaderCard);
                 const aiHeaderTitle = el("div", "mjj-suite-title", aiHeaderTop);
@@ -3527,7 +3548,7 @@ html.dark-layout #mjj-cc-overlay {
                 tabEnterHooks.set("ai", mountAiIntoPane);
 
                 // 3. Embedded Chat Backup & History Pane ("chat")
-                const chatPane = addNavTab("chat", "💬 私信与云备份", "云端");
+                const chatPane = addNavTab("chat", "💬 私信与云备份");
                 const chatHeaderCard = el("div", "mjj-suite-card", chatPane);
                 const chatHeaderTop = el("div", "mjj-suite-top", chatHeaderCard);
                 const chatHeaderTitle = el("div", "mjj-suite-title", chatHeaderTop);
@@ -4076,7 +4097,7 @@ html.dark-layout #mjj-cc-overlay {
                 });
 
                 // 3.5 Standalone Unified Image Hosting & Upload Tab ("image")
-                const imagePane = addNavTab("image", "🖼️ 图床与上传", "5图床");
+                const imagePane = addNavTab("image", "🖼️ 图床与上传");
                 const imgHeaderCard = el("div", "mjj-suite-card", imagePane);
                 const imgHeaderTop = el("div", "mjj-suite-top", imgHeaderCard);
                 const imgHeaderTitle = el("div", "mjj-suite-title", imgHeaderTop);
@@ -5994,7 +6015,7 @@ html.dark-layout #mjj-cc-overlay {
 </svg>`;
 
     // ===== 基础 CSS =====
-    const BASE_CSS = `.blocked-post{display:none!important}.layui-layer-tips:has(.nsx-rep-card),.layui-layer-tips .layui-layer-content:has(.nsx-rep-card){background:transparent!important;background-color:transparent!important;box-shadow:none!important;border:none!important;padding:0!important}.layui-layer-tips:has(.nsx-rep-card) .layui-layer-TipsG{display:none!important}.nsx-post-folded>*:not(.nsx-fold-notice){display:none!important}.nsx-post-folded{background:transparent!important;background-color:transparent!important;padding:0!important;min-height:0!important;border-bottom:1px dashed rgba(148,163,184,.18)!important}.nsx-fold-notice{width:100%;box-sizing:border-box;padding:4px 12px!important;font-size:12px;line-height:1.4;color:#94a3b8!important;opacity:.7;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:opacity .15s ease,background-color .15s ease}.nsx-fold-notice:hover{opacity:.95;background-color:rgba(148,163,184,.05)}.nsx-fold-notice b{font-weight:500;color:#64748b}body.dark-layout .nsx-fold-notice b,html.dark-layout .nsx-fold-notice b{color:#cbd5e1}.nsx-unfold-btn{font-size:11px;color:#94a3b8!important;padding:1px 7px;border-radius:4px;border:1px solid rgba(148,163,184,.25);text-decoration:none!important;cursor:pointer;flex-shrink:0;transition:all .15s ease}.nsx-unfold-btn:hover{color:#64748b!important;border-color:rgba(148,163,184,.5);background:rgba(148,163,184,.1)}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
+    const BASE_CSS = `.blocked-post{display:none!important}.layui-layer-tips:has(.nsx-rep-card),.layui-layer-tips .layui-layer-content:has(.nsx-rep-card){background:transparent!important;background-color:transparent!important;box-shadow:none!important;border:none!important;padding:0!important}.layui-layer-tips:has(.nsx-rep-card) .layui-layer-TipsG{display:none!important}.nsx-post-folded>*:not(.nsx-fold-notice){display:none!important}.nsx-post-folded{background:transparent!important;background-color:transparent!important;padding:0!important;min-height:0!important;border-bottom:1px dashed rgba(148,163,184,.18)!important}.nsx-fold-notice{width:100%;box-sizing:border-box;padding:4px 12px!important;font-size:12px;line-height:1.4;color:#94a3b8!important;opacity:.7;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:opacity .15s ease,background-color .15s ease}.nsx-fold-notice:hover{opacity:.95;background-color:rgba(148,163,184,.05)}.nsx-fold-notice b{font-weight:500;color:#64748b}body.dark-layout .nsx-fold-notice b,html.dark-layout .nsx-fold-notice b{color:#cbd5e1}.nsx-unfold-btn{font-size:11.5px;color:#94a3b8!important;padding:0!important;border:none!important;background:transparent!important;text-decoration:none!important;cursor:pointer;flex-shrink:0;transition:color .15s ease}.nsx-unfold-btn:hover{color:#64748b!important;border:none!important;background:transparent!important}#nsx-toggle-autoload{display:flex;justify-content:center;align-items:center}#back-to-comment{display:flex}#fast-nav-button-group .nav-item-btn:nth-last-child(4){bottom:120px}#fast-nav-button-group .nav-item-btn:nth-last-child(5){bottom:160px}#fast-nav-button-group .nav-item-btn:nth-last-child(6){bottom:200px}#fast-nav-button-group .nav-item-btn:nth-last-child(7){bottom:240px}#nsx-icon-group{display:flex;align-items:center;gap:0!important;list-style:none;border-left:1px solid var(--border-color,#e5e7eb);margin-left:6px!important;padding-left:6px!important;height:30px}#nsx-icon-group>.filter-dropdown-on,#nsx-icon-group>.relation-dropdown-on,#nsx-icon-group>.history-dropdown-on,#nsx-icon-group>.email-dropdown-on,#nsx-icon-group>.settings-dropdown-on{cursor:pointer;display:flex!important;align-items:center;justify-content:center;height:30px!important;padding:0 6px!important;min-width:auto!important;width:auto!important;margin:0!important;position:relative!important;top:0!important;transition:opacity .1s;color:inherit;text-decoration:none}#nsx-icon-group>.filter-dropdown-on svg,#nsx-icon-group>.relation-dropdown-on svg,#nsx-icon-group>.history-dropdown-on svg,#nsx-icon-group>.email-dropdown-on svg,#nsx-icon-group>.settings-dropdown-on svg{display:block!important;width:16px!important;height:16px!important;transform:translateY(0)!important}#nsx-icon-group>.filter-dropdown-on:hover,#nsx-icon-group>.relation-dropdown-on:hover,#nsx-icon-group>.history-dropdown-on:hover,#nsx-icon-group>.email-dropdown-on:hover,#nsx-icon-group>.settings-dropdown-on:hover{opacity:.6}#nsx-filter-panel,#nsx-history-panel,#nsx-rel-panel{position:fixed;right:12px;top:60px;width:min(380px,94vw);height:min(700px,80vh);background:#fff;border:1px solid #e4e4e4;border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.12);z-index:99999;display:none;flex-direction:column;overflow:hidden}#nsx-filter-panel.show,#nsx-history-panel.show,#nsx-rel-panel.show{display:flex}.nsx-mode-layer .layui-layer-content{overflow:visible!important;padding-bottom:8px}.nsx-mode-layer .layui-form-select dl{z-index:999999!important}.dark-layout #nsx-filter-panel,.dark-layout #nsx-history-panel,.dark-layout #nsx-rel-panel{background:#1e1e1e;border-color:#3a3a3a;color:#e0e0e0}.dark-layout #nsx-icon-group{border-left-color:#3a3a3a}.msc-overlay{background-color:var(--bg-sub-color)}.nsx-mobile .md-editor .mde-toolbar{display:flex;flex-wrap:wrap;align-items:center;height:auto!important;min-height:40px;padding-right:4px;overflow:visible}.nsx-mobile .md-editor .mde-toolbar>*{flex:0 0 auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-item{height:30px;line-height:30px}.nsx-mobile .md-editor .mde-toolbar .toolbar-item.right{margin-left:auto}.nsx-mobile .md-editor .mde-toolbar .toolbar-tabs{width:100%;order:-1}.nsx-mobile .layui-layer{max-width:94vw!important}.nsx-mobile .layui-layer .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .layui-layer .layui-input-block{margin-left:0!important}.nsx-mobile .nsx-ai-form .layui-form-label{width:auto!important;float:none!important;text-align:left!important;padding:0 0 4px!important}.nsx-mobile .nsx-ai-form .layui-input-block{margin-left:0!important}`;
 
     const applyRuntimeSettings = (ctx, changedKeys = []) => {
         const changed = new Set(changedKeys || []);
@@ -6126,9 +6147,10 @@ html.dark-layout #mjj-cc-overlay {
         const initUI = () => {
             if (!window.layui?.layer) return (ctx.ui = {});
             const layer = window.layui.layer, uw = ctx.uw;
+            const escToast = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             ctx.ui = {
                 layer,
-                toast: (text, style) => { const idx = layer.msg(text, { offset: 't', area: ['100%', 'auto'], anim: 'slideDown' }); layer.style(idx, Object.assign({ opacity: 0.9 }, style)); return idx; },
+                toast: (text, style) => { const idx = layer.msg(escToast(text), { offset: 't', area: ['100%', 'auto'], anim: 'slideDown' }); layer.style(idx, Object.assign({ opacity: 0.9 }, style)); return idx; },
                 info: msg => ctx.ui.toast(msg, { "background-color": "#4D82D6" }),
                 success: msg => ctx.ui.toast(msg, { "background-color": "#57BF57" }),
                 warning: msg => ctx.ui.toast(msg, { "background-color": "#D6A14D" }),
@@ -6248,7 +6270,7 @@ html.dark-layout #mjj-cc-overlay {
                         return new Promise((resolve, reject) => {
                             GM_xmlhttpRequest({
                                 method, url,
-                                headers: { 'Accept': 'application/json', ...(withAuth && APP.api.key ? { 'X-API-Key': APP.api.key } : {}), ...headers },
+                                headers: { 'Accept': 'application/json', 'Origin': 'https://www.nodeseek.com', 'Referer': 'https://www.nodeseek.com/', ...(withAuth && APP.api.key ? { 'X-API-Key': APP.api.key } : {}), ...headers },
                                 data, withCredentials: true, responseType: 'json',
                                 onload: response => { if (response.status === 200 && response.response) resolve(response.response); else reject(response); },
                                 onerror: reject
@@ -6985,8 +7007,8 @@ html.dark-layout #mjj-cc-overlay {
                     display: flex; justify-content: space-between; align-items: center; gap: 12px;
                 }
                 .nsx-unfold-btn {
-                    font-size: 11px; color: #94a3b8 !important; padding: 1px 7px; border-radius: 4px;
-                    border: 1px solid rgba(148, 163, 184, 0.25); cursor: pointer; text-decoration: none !important; flex-shrink: 0;
+                    font-size: 11.5px; color: #94a3b8 !important; padding: 0 !important;
+                    border: none !important; background: transparent !important; cursor: pointer; text-decoration: none !important; flex-shrink: 0;
                 }
 
                 /* 彻底隐藏模式 */
@@ -10354,7 +10376,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
       GM_xmlhttpRequest({
         method: "GET",
         url: "https://api.nodeimage.com/api/user/api-key",
-        headers: { Accept: "application/json" },
+        headers: { Accept: "application/json", Origin: "https://www.nodeseek.com", Referer: "https://www.nodeseek.com/" },
         withCredentials: true,
         responseType: "json",
         onload(res) {
@@ -10422,7 +10444,20 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     }
     const def = IMAGE_HOST_DEFS[providerId] || IMAGE_HOST_DEFS.sixteen;
     const filename = file?.name || imageFileName();
-    const uploaded = await uploadImageToProvider(providerId, file, filename, { settings: AI_SETTINGS });
+    let uploaded = null;
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (attempt > 0) await sleep(900);
+      try {
+        uploaded = await uploadImageToProvider(providerId, file, filename, { settings: AI_SETTINGS });
+        break;
+      } catch (err) {
+        lastErr = err;
+        const st = Number(err?.status) || 0;
+        if (st < 500 || attempt === 2) throw err;
+      }
+    }
+    if (!uploaded) throw lastErr || new Error("图片上传失败。");
     const markdown = `![${file?.name || "image"}](${uploaded.imageUrl})`;
     addUploadHistory({
       id: `editor-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -10458,6 +10493,9 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   window.__nsxRuntime.openAiSettings = () => openSettingsModal(AI_PROVIDER);
   window.__nsxRuntime.getAiStatusSummary = () => ({
     provider: AI_PROVIDER,
+    providerLabel: PROVIDER_DEFS[AI_PROVIDER]?.shortLabel || AI_PROVIDER,
+    model: ACTIVE_AI?.model || "",
+    hasKey: Boolean(ACTIVE_AI?.apiKey),
     displayName: aiDisplayName(),
     customEnabled: !!AI_SETTINGS?.customProfile?.enabled
   });
@@ -10898,11 +10936,22 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   }
 
   function imageHostResponseDetail(res) {
+    const raw = String(res?.responseText || "").trim();
+    if (!raw) return "";
     try {
-      const json = JSON.parse(res?.responseText || "{}");
+      const json = JSON.parse(raw);
       return String(json?.error?.message || json?.error || json?.message || "").trim();
     } catch {
-      return String(res?.responseText || "").replace(/\s+/g, " ").trim().slice(0, 240);
+      if (/<!doctype\s+html|<html[\s>]|<head[\s>]|<body[\s>]|<script[\s>]/i.test(raw)) {
+        const preMatch = raw.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+        const titleMatch = raw.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+        const extracted = (preMatch?.[1] || titleMatch?.[1] || "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        return extracted && !/^error$/i.test(extracted) ? extracted.slice(0, 120) : "服务器内部错误或网关拦截";
+      }
+      return raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
     }
   }
 
@@ -10919,10 +10968,10 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     return Number(error?.status) === 404 && /Cannot\s+DELETE\s+\//i.test(String(error?.responseText || error?.message || ""));
   }
 
-  function imageHostHttpRequest({ method = "POST", url, headers = {}, data = null, timeout = 120000, label = "图床" }) {
+  function imageHostHttpRequest({ method = "POST", url, headers = {}, data = null, timeout = 120000, withCredentials = false, label = "图床" }) {
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
-        method, url, headers, data, timeout,
+        method, url, headers, data, timeout, withCredentials,
         onload(res) {
           if (res.status >= 200 && res.status < 300) { resolve(res); return; }
           reject(imageHostResponseError(label, res, url));
@@ -10950,7 +10999,18 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     const form = new FormData();
     if (providerId === "nodeimage") {
       form.append("image", blob, filename);
-      const res = await imageHostHttpRequest({ url:"https://api.nodeimage.com/api/upload", headers:{"X-API-Key":credential}, data:form, label:def.label });
+      const res = await imageHostHttpRequest({
+        url: "https://api.nodeimage.com/api/upload",
+        headers: {
+          Accept: "application/json",
+          Origin: "https://www.nodeseek.com",
+          Referer: "https://www.nodeseek.com/",
+          "X-API-Key": credential,
+        },
+        withCredentials: true,
+        data: form,
+        label: def.label,
+      });
       const json = parseJsonResponse(res, def.label);
       const data = json?.data || json;
       let imageUrl = String(data?.url || data?.image_url || data?.imageUrl || data?.direct_url || data?.original_url || data?.src || data?.image?.url || data?.links?.direct || data?.urls?.original || "").trim();
@@ -11032,7 +11092,19 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
       for (let index = 0; index < uniqueUrls.length; index += 1) {
         const url = uniqueUrls[index];
         try {
-          await imageHostHttpRequest({ method:"DELETE", url, headers:{"X-API-Key":credential}, timeout:30000, label:"NodeImage 删除" });
+          await imageHostHttpRequest({
+            method: "DELETE",
+            url,
+            headers: {
+              Accept: "application/json",
+              Origin: "https://www.nodeseek.com",
+              Referer: "https://www.nodeseek.com/",
+              "X-API-Key": credential,
+            },
+            withCredentials: true,
+            timeout: 30000,
+            label: "NodeImage 删除",
+          });
           return { ok:true, endpoint:url, fallbackUsed:index > 0 };
         } catch (error) {
           lastError = error;
