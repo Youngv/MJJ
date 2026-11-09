@@ -2,12 +2,12 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>MJJ 控制面板</title>
+  <title>MJJ 控制中心</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      width: 336px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+      width: 348px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
       background: #0f172a;
       color: #f1f5f9;
       padding: 14px;
@@ -19,18 +19,26 @@
       justify-content: space-between;
       padding-bottom: 12px;
       margin-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #334155;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .brand img {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    .logo-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.4px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
     }
     .brand-text {
       display: flex;
@@ -40,8 +48,8 @@
     .brand-title {
       font-size: 14.5px;
       font-weight: 800;
-      color: #fff;
-      letter-spacing: 0.3px;
+      color: #f8fafc;
+      letter-spacing: 0.2px;
     }
     .brand-sub {
       font-size: 11px;
@@ -53,15 +61,15 @@
       border-radius: 99px;
       background: rgba(16, 185, 129, 0.16);
       color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.32);
       font-weight: 700;
     }
     .hero-btn {
       width: 100%;
       padding: 11px 14px;
-      margin-bottom: 10px;
-      border-radius: 11px;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      margin-bottom: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.45);
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(14, 165, 233, 0.18) 100%);
       color: #fff;
       font-size: 13.5px;
@@ -79,64 +87,121 @@
     }
     .hero-hint {
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       color: #34d399;
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(15, 23, 42, 0.6);
       padding: 2px 7px;
       border-radius: 6px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
     }
     .section-title {
       font-size: 11px;
       font-weight: 700;
       color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin: 8px 2px 6px;
+      letter-spacing: 0.4px;
+      margin: 10px 2px 6px;
     }
-    .grid-2 {
+    .bento-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin-bottom: 8px;
+      gap: 7px;
     }
-    .menu-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 360px;
-      overflow-y: auto;
-    }
-    .menu-btn {
-      width: 100%;
-      text-align: left;
-      padding: 9px 11px;
-      border-radius: 9px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    .bento-card {
+      padding: 10px 11px;
+      border-radius: 11px;
+      border: 1px solid #334155;
       background: #1e293b;
       color: #f1f5f9;
-      font-size: 12.5px;
-      font-weight: 600;
+      text-align: left;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
       transition: all 0.14s ease;
+    }
+    .bento-card:hover {
+      background: #263449;
+      border-color: #10b981;
+      transform: translateY(-1px);
+    }
+    .bento-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #f8fafc;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+    .bento-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .drawer-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
     }
-    .menu-btn:hover {
-      background: #263449;
-      border-color: rgba(16, 185, 129, 0.45);
+    .drawer-btn {
+      padding: 8px 6px;
+      border-radius: 9px;
+      border: 1px solid #334155;
+      background: #131c31;
+      color: #cbd5e1;
+      font-size: 11.5px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .drawer-btn:hover {
+      border-color: #10b981;
       color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+    }
+    .status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .status-btn {
+      width: 100%;
+      padding: 8px 11px;
+      border-radius: 9px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #f1f5f9;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.14s ease;
+    }
+    .status-btn:hover {
+      border-color: #10b981;
+      background: #263449;
+    }
+    .status-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #131c31;
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
     .empty {
-      padding: 16px 10px;
+      padding: 16px 12px;
       text-align: center;
       color: #94a3b8;
       font-size: 12px;
       line-height: 1.6;
       background: #1e293b;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      border: 1px solid #334155;
     }
     .quick-links {
       display: flex;
@@ -148,29 +213,29 @@
       text-align: center;
       padding: 8px 0;
       border-radius: 8px;
-      background: rgba(16, 185, 129, 0.14);
+      background: rgba(16, 185, 129, 0.16);
       color: #34d399;
       text-decoration: none;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.35);
     }
     .quick-link:hover {
-      background: rgba(16, 185, 129, 0.24);
+      background: rgba(16, 185, 129, 0.28);
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="brand">
-      <img src="icons/icon48.png" alt="MJJ">
+      <div class="logo-box">MJJ</div>
       <div class="brand-text">
-        <span class="brand-title">MJJ 控制面板</span>
+        <span class="brand-title">MJJ 控制中心</span>
         <span class="brand-sub">NodeSeek & DeepFlood 全能套件</span>
       </div>
     </div>
-    <span class="badge">v1.2.0</span>
+    <span class="badge" id="ver-badge">v1.3.0</span>
   </div>
   <div id="menu-container">
     <div class="empty">正在连接当前页面...</div>

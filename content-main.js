@@ -1,4 +1,4 @@
-// MJJ - Extension Main Content Script (v1.2.0)
+// MJJ - Extension Main Content Script (v1.3.0)
 (async function() {
   const gm = window.__NSX_GM__;
   if (gm && gm.ready) {
@@ -1624,6 +1624,7 @@
     // 菜单系统（油猴菜单 + 高级设置面板）
 
     const CSS$1 = `
+:root,
 #mjj-cc-overlay {
     --mjj-bg: #ffffff;
     --mjj-bg-sub: #f8fafc;
@@ -1636,20 +1637,9 @@
     --mjj-accent-hover: #059669;
     --mjj-accent-soft: rgba(16, 185, 129, 0.12);
     --mjj-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.28);
-    position: fixed;
-    inset: 0;
-    z-index: 100050;
-    background: rgba(15, 23, 42, 0.48);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    opacity: 0;
-    transition: opacity 0.18s ease;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
+body.dark-layout,
+html.dark-layout,
 body.dark-layout #mjj-cc-overlay,
 html.dark-layout #mjj-cc-overlay {
     --mjj-bg: #0f172a;
@@ -1663,6 +1653,21 @@ html.dark-layout #mjj-cc-overlay {
     --mjj-accent-hover: #34d399;
     --mjj-accent-soft: rgba(16, 185, 129, 0.16);
     --mjj-shadow: 0 28px 70px -12px rgba(0, 0, 0, 0.65);
+}
+#mjj-cc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100050;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 #mjj-cc-overlay.mjj-visible {
     opacity: 1;
@@ -2242,6 +2247,365 @@ html.dark-layout #mjj-cc-overlay {
         grid-column: span 12;
     }
 }
+
+/* ==========================================================================
+   [ MJJ 统一视觉设计 ] - 嵌入式 AI 设置 / 私信与云备份 / 全局悬浮面板
+   ========================================================================== */
+.mjj-ai-embed-host {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.ns-ai-settings-dialog.mjj-embedded-ai {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+.ns-ai-settings-dialog.mjj-embedded-ai .ns-ai-settings-head,
+.ns-ai-settings-dialog.mjj-embedded-ai .ns-ai-settings-resize {
+    display: none !important;
+}
+.ns-ai-settings-dialog.mjj-embedded-ai .ns-ai-settings-body {
+    padding: 16px 18px !important;
+    overflow: visible !important;
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-main-tabs,
+.ns-ai-settings-dialog .ns-ai-settings-tabs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 4px !important;
+    border-radius: 11px !important;
+    background: var(--mjj-bg-sub) !important;
+    border: 1px solid var(--mjj-border) !important;
+    margin-bottom: 14px !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-main-tab,
+.ns-ai-settings-dialog .ns-ai-settings-tab {
+    border: none !important;
+    background: transparent !important;
+    color: var(--mjj-text-sub) !important;
+    border-radius: 8px !important;
+    padding: 7px 12px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.14s ease !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-main-tab:hover,
+.ns-ai-settings-dialog .ns-ai-settings-tab:hover {
+    color: var(--mjj-text) !important;
+    background: var(--mjj-bg-hover) !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-main-tab.active,
+.ns-ai-settings-dialog .ns-ai-settings-tab.active {
+    background: var(--mjj-accent) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.28) !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-card,
+.ns-ai-settings-dialog .ns-ai-mode-card,
+.ns-ai-settings-dialog .ns-ai-preset-editor,
+.ns-ai-settings-dialog .ns-ai-preset-list {
+    background: var(--mjj-bg-sub) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 12px !important;
+    color: var(--mjj-text) !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-note,
+.ns-ai-settings-dialog .ns-ai-field-help {
+    color: var(--mjj-text-sub) !important;
+}
+.ns-ai-settings-dialog .ns-ai-field label,
+.ns-ai-settings-dialog .ns-ai-mode-head h4 {
+    color: var(--mjj-text) !important;
+}
+.ns-ai-settings-dialog .ns-ai-input,
+.ns-ai-settings-dialog .ns-ai-select,
+.ns-ai-settings-dialog .ns-ai-textarea {
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 8px !important;
+}
+.ns-ai-settings-dialog .ns-ai-input:focus,
+.ns-ai-settings-dialog .ns-ai-select:focus,
+.ns-ai-settings-dialog .ns-ai-textarea:focus {
+    border-color: var(--mjj-accent) !important;
+    box-shadow: 0 0 0 3px var(--mjj-accent-soft) !important;
+}
+.ns-ai-settings-dialog .ns-ai-settings-foot {
+    background: var(--mjj-bg-sub) !important;
+    border-top: 1px solid var(--mjj-border) !important;
+    padding: 12px 18px !important;
+}
+.ns-ai-settings-dialog .ns-ai-btn,
+#ns-ai-profile-panel .ns-ai-btn,
+.ns-ai-share-dialog .ns-ai-btn,
+.ns-ai-moderation-dialog .ns-ai-btn {
+    border-radius: 8px !important;
+    border: 1px solid var(--mjj-border) !important;
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    font-weight: 600 !important;
+    transition: all 0.15s ease !important;
+}
+.ns-ai-settings-dialog .ns-ai-btn:hover,
+#ns-ai-profile-panel .ns-ai-btn:hover,
+.ns-ai-share-dialog .ns-ai-btn:hover,
+.ns-ai-moderation-dialog .ns-ai-btn:hover {
+    border-color: var(--mjj-accent) !important;
+    color: var(--mjj-accent) !important;
+    background: var(--mjj-accent-soft) !important;
+}
+.ns-ai-settings-dialog .ns-ai-btn-primary,
+#ns-ai-profile-panel .ns-ai-btn-primary,
+.ns-ai-share-dialog .ns-ai-btn-primary,
+.ns-ai-moderation-dialog .ns-ai-btn-primary {
+    background: var(--mjj-accent) !important;
+    border-color: var(--mjj-accent) !important;
+    color: #fff !important;
+}
+.ns-ai-settings-dialog .ns-ai-btn-primary:hover,
+#ns-ai-profile-panel .ns-ai-btn-primary:hover,
+.ns-ai-share-dialog .ns-ai-btn-primary:hover,
+.ns-ai-moderation-dialog .ns-ai-btn-primary:hover {
+    background: var(--mjj-accent-hover) !important;
+    border-color: var(--mjj-accent-hover) !important;
+    color: #fff !important;
+}
+
+/* AI 画像分析结果悬浮窗、分享弹窗、悬停卡片统一 MJJ 风格 */
+#ns-ai-profile-panel,
+.ns-ai-share-dialog,
+.ns-ai-moderation-dialog,
+#ns-ai-account-preview {
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--mjj-shadow) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+}
+#ns-ai-profile-panel .ns-ai-head,
+.ns-ai-share-dialog .ns-ai-share-head,
+.ns-ai-moderation-dialog .ns-ai-moderation-head {
+    background: var(--mjj-bg-sub) !important;
+    border-bottom: 1px solid var(--mjj-border) !important;
+}
+#ns-ai-profile-panel .ns-ai-provider-mini {
+    background: var(--mjj-bg-sub) !important;
+    border-bottom: 1px solid var(--mjj-border) !important;
+    color: var(--mjj-text-sub) !important;
+}
+.ns-ai-profile-wrap .ns-ai-tag {
+    border-radius: 7px !important;
+    border: 1px solid var(--mjj-border) !important;
+    background: var(--mjj-bg-sub) !important;
+    color: var(--mjj-text) !important;
+    font-weight: 600 !important;
+    transition: all 0.15s ease !important;
+}
+.ns-ai-profile-wrap .ns-ai-tag:hover {
+    border-color: var(--mjj-accent) !important;
+    color: var(--mjj-accent) !important;
+    background: var(--mjj-accent-soft) !important;
+}
+
+/* 私信与云备份原生内嵌样式 */
+.mjj-subcard {
+    background: var(--mjj-bg-sub);
+    border: 1px solid var(--mjj-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.mjj-subcard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--mjj-border);
+}
+.mjj-subcard-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--mjj-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mjj-chat-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--mjj-bg-sub);
+    border: 1px solid var(--mjj-border);
+    border-radius: 11px;
+}
+.mjj-chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.mjj-chat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--mjj-bg-sub);
+    border: 1px solid var(--mjj-border);
+    border-radius: 11px;
+    transition: border-color 0.14s ease, background 0.14s ease;
+}
+.mjj-chat-row:hover {
+    border-color: var(--mjj-accent);
+    background: var(--mjj-bg-hover);
+}
+.mjj-chat-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+.mjj-chat-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--mjj-border);
+    flex-shrink: 0;
+    background: var(--mjj-bg-card);
+}
+.mjj-chat-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+}
+.mjj-chat-name-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.mjj-chat-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--mjj-text);
+}
+.mjj-chat-uid {
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--mjj-bg-card);
+    color: var(--mjj-text-sub);
+    border: 1px solid var(--mjj-border);
+}
+.mjj-chat-remark {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--mjj-accent-soft);
+    color: var(--mjj-accent);
+}
+.mjj-chat-msg {
+    font-size: 12.5px;
+    color: var(--mjj-text-sub);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mjj-chat-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.mjj-chat-time {
+    font-size: 11.5px;
+    color: var(--mjj-text-sub);
+    white-space: nowrap;
+}
+.mjj-chat-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--mjj-text-sub);
+    font-size: 13px;
+    background: var(--mjj-bg-sub);
+    border: 1px dashed var(--mjj-border);
+    border-radius: 11px;
+}
+
+/* 兼容云端备份恢复列表弹窗 & 顶部栏三个悬浮抽屉统一 MJJ 风格 */
+.nodeseek-modal {
+    backdrop-filter: blur(5px) !important;
+    background: rgba(15, 23, 42, 0.48) !important;
+    z-index: 100060 !important;
+}
+.nodeseek-modal-content {
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--mjj-shadow) !important;
+}
+.nodeseek-modal-header {
+    background: var(--mjj-bg-sub) !important;
+    border-bottom: 1px solid var(--mjj-border) !important;
+}
+.nodeseek-modal-title {
+    color: var(--mjj-text) !important;
+    font-weight: 700 !important;
+}
+.nodeseek-btn,
+.nodeseek-history-btn {
+    border-radius: 8px !important;
+    background: var(--mjj-accent) !important;
+    color: #fff !important;
+    border: 1px solid var(--mjj-accent) !important;
+    font-weight: 600 !important;
+}
+.nodeseek-btn:hover,
+.nodeseek-history-btn:hover {
+    background: var(--mjj-accent-hover) !important;
+    border-color: var(--mjj-accent-hover) !important;
+}
+#nsx-filter-panel,
+#nsx-rel-panel,
+#nsx-history-panel {
+    background: var(--mjj-bg-card) !important;
+    color: var(--mjj-text) !important;
+    border: 1px solid var(--mjj-border) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--mjj-shadow) !important;
+}
 `;
 
     const el = (t, c, p, s) => { const e = document.createElement(t); if (c) e.className = c; if (s) e.style.cssText = s; if (p) p.appendChild(e); return e; };
@@ -2426,6 +2790,7 @@ html.dark-layout #mjj-cc-overlay {
         meta: { open_post_in_new_tab: { label: "新标签页打开帖子", group: "🧭 辅助工具" } },
         match: () => true,
         init(ctx) {
+            addStyle("nsx-cfg", CSS$1);
             const uw = ctx.uw, code = ctx.site?.code || "ns";
             const ids = [];
             const txt = (m, v) => `${m.text}: ${m.states[v].s1} ${m.states[v].s2}`;
@@ -2575,7 +2940,7 @@ html.dark-layout #mjj-cc-overlay {
                 return { levelCacheCount, kwCount, friendCount, blackCount, histCount, aiText, aiSub };
             };
 
-            const advSettings = (initialTab = "overview", highlightCardKey = "") => {
+            const advSettings = (initialTab = "overview", highlightCardKey = "", extraOpts = {}) => {
                 addStyle("nsx-cfg", CSS$1);
                 const existing = document.getElementById("mjj-cc-overlay");
                 if (existing) existing.remove();
@@ -2630,7 +2995,7 @@ html.dark-layout #mjj-cc-overlay {
                 const titleEl = el("span", "mjj-cc-title", titleRow);
                 titleEl.textContent = "MJJ 控制中心";
                 const verBadge = el("span", "mjj-cc-badge", titleRow);
-                verBadge.textContent = `v${info.version || "1.2.0"}`;
+                verBadge.textContent = `v${info.version || "1.3.0"}`;
                 const subEl = el("div", "mjj-cc-subtitle", titleWrap);
                 subEl.textContent = "NodeSeek & DeepFlood 全能增强 · AI 画像 · 私信备份";
 
@@ -2654,6 +3019,8 @@ html.dark-layout #mjj-cc-overlay {
                         savePill.classList.remove("is-saved");
                     }, 1800);
                 };
+                window.__nsxRuntime ||= {};
+                window.__nsxRuntime.flashControlCenterSaved = flashSaved;
 
                 const closeBtn = el("button", "mjj-cc-close", headerRight);
                 closeBtn.type = "button";
@@ -2669,8 +3036,9 @@ html.dark-layout #mjj-cc-overlay {
 
                 const panes = new Map();
                 const navButtons = new Map();
+                const tabEnterHooks = new Map();
 
-                const switchTab = (tabId) => {
+                const switchTab = (tabId, scrollSelector = "") => {
                     searchInput.value = "";
                     panes.forEach((pane, id) => {
                         pane.classList.toggle("is-active", id === tabId);
@@ -2680,6 +3048,14 @@ html.dark-layout #mjj-cc-overlay {
                         btn.classList.toggle("is-active", id === tabId);
                     });
                     content.scrollTop = 0;
+                    const hook = tabEnterHooks.get(tabId);
+                    if (hook) hook();
+                    if (scrollSelector) {
+                        setTimeout(() => {
+                            const target = content.querySelector(scrollSelector);
+                            target?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 60);
+                    }
                 };
 
                 const addNavTab = (tabId, label, badgeText) => {
@@ -2721,6 +3097,17 @@ html.dark-layout #mjj-cc-overlay {
                     return { wrap: label, input: inp };
                 };
 
+                const ensureAiReady = () => {
+                    if (!window.__nsxRuntime?.mountAiSettingsInto) {
+                        try { modules.get("aiProfileExt")?.init?.(ctx); } catch { }
+                    }
+                };
+                const ensureChatReady = () => {
+                    if (!window.chatBackup) {
+                        try { modules.get("chatBackupExt")?.init?.(ctx); } catch { }
+                    }
+                };
+
                 // 1. Overview Pane
                 const overviewPane = addNavTab("overview", "🏠 套件总览", "3合1");
                 const stats = collectLiveStats();
@@ -2746,7 +3133,7 @@ html.dark-layout #mjj-cc-overlay {
                 const aiSuite = el("div", "mjj-suite-card", overviewPane);
                 const aiTop = el("div", "mjj-suite-top", aiSuite);
                 const aiTitle = el("div", "mjj-suite-title", aiTop);
-                aiTitle.innerHTML = `<span>🤖 用户 AI 画像与深度交易分析</span><span class="mjj-cc-badge">v2.8.1</span>`;
+                aiTitle.innerHTML = `<span>🤖 用户 AI 画像与深度交易分析</span><span class="mjj-cc-badge">内置页签</span>`;
                 const aiMasterSw = createSwitchEl(store.get("ai_profile_ext.enabled", true), (on) => {
                     commitValue("ai_profile_ext.enabled", on);
                 });
@@ -2756,20 +3143,14 @@ html.dark-layout #mjj-cc-overlay {
                 const aiBtns = el("div", "mjj-btn-row", aiSuite);
                 const openAiBtn = el("button", "mjj-btn is-primary", aiBtns);
                 openAiBtn.type = "button";
-                openAiBtn.textContent = "⚙️ 打开 AI 接口与 Prompt 详细设置";
-                openAiBtn.addEventListener("click", () => {
-                    closeModal();
-                    if (!window.__nsxRuntime?.openAiSettings) {
-                        try { modules.get("aiProfileExt")?.init?.(ctx); } catch { }
-                    }
-                    setTimeout(() => window.__nsxRuntime?.openAiSettings?.(), 60);
-                });
+                openAiBtn.textContent = "🤖 进入 AI 画像与模型设置";
+                openAiBtn.addEventListener("click", () => switchTab("ai"));
 
                 // Suite 2: Chat Backup
                 const chatSuite = el("div", "mjj-suite-card", overviewPane);
                 const chatTop = el("div", "mjj-suite-top", chatSuite);
                 const chatTitle = el("div", "mjj-suite-title", chatTop);
-                chatTitle.innerHTML = `<span>💬 私信记录本地缓存与云端备份</span><span class="mjj-cc-badge">v2.0.0</span>`;
+                chatTitle.innerHTML = `<span>💬 私信记录本地缓存与云端备份</span><span class="mjj-cc-badge">内置页签</span>`;
                 const chatMasterSw = createSwitchEl(store.get("chat_backup_ext.enabled", true), (on) => {
                     commitValue("chat_backup_ext.enabled", on);
                 });
@@ -2778,35 +3159,15 @@ html.dark-layout #mjj-cc-overlay {
                 chatDesc.textContent = "自动将 NodeSeek / DeepFlood 私信会话缓存至本地 IndexedDB，并支持 WebDAV 与 Cloudflare R2 双通道加密备份与跨设备恢复。";
                 const chatBtns = el("div", "mjj-btn-row", chatSuite);
 
-                const ensureChatReady = () => {
-                    if (!window.__nsxRuntime?.openChatBackupSettings) {
-                        try { modules.get("chatBackupExt")?.init?.(ctx); } catch { }
-                    }
-                };
-
-                const openChatCfgBtn = el("button", "mjj-btn is-primary", chatBtns);
-                openChatCfgBtn.type = "button";
-                openChatCfgBtn.textContent = "☁️ WebDAV / R2 备份设置";
-                openChatCfgBtn.addEventListener("click", () => {
-                    closeModal();
-                    ensureChatReady();
-                    setTimeout(() => {
-                        if (window.__nsxRuntime?.openChatBackupSettings) window.__nsxRuntime.openChatBackupSettings();
-                        else ctx.ui.alert?.("提示", "请先登录论坛账号后再配置私信备份");
-                    }, 120);
-                });
-
-                const openChatHistBtn = el("button", "mjj-btn", chatBtns);
+                const openChatHistBtn = el("button", "mjj-btn is-primary", chatBtns);
                 openChatHistBtn.type = "button";
                 openChatHistBtn.textContent = "📜 查看历史私信记录";
-                openChatHistBtn.addEventListener("click", () => {
-                    closeModal();
-                    ensureChatReady();
-                    setTimeout(() => {
-                        if (window.__nsxRuntime?.openChatHistory) window.__nsxRuntime.openChatHistory();
-                        else location.href = "/notification#/message?mode=list";
-                    }, 120);
-                });
+                openChatHistBtn.addEventListener("click", () => switchTab("chat", "[data-card-key='chat-history-card']"));
+
+                const openChatCfgBtn = el("button", "mjj-btn", chatBtns);
+                openChatCfgBtn.type = "button";
+                openChatCfgBtn.textContent = "☁️ WebDAV / R2 备份设置";
+                openChatCfgBtn.addEventListener("click", () => switchTab("chat", "[data-card-key='chat-cloud-config']"));
 
                 const runBackupNowBtn = el("button", "mjj-btn", chatBtns);
                 runBackupNowBtn.type = "button";
@@ -2814,9 +3175,13 @@ html.dark-layout #mjj-cc-overlay {
                 runBackupNowBtn.addEventListener("click", () => {
                     ensureChatReady();
                     setTimeout(() => {
-                        if (window.__nsxRuntime?.runChatBackupNow) window.__nsxRuntime.runChatBackupNow();
-                        else ctx.ui.alert?.("提示", "请先配置 WebDAV 或 R2 备份服务");
-                    }, 120);
+                        if (window.__nsxRuntime?.runChatBackupNow) {
+                            window.__nsxRuntime.runChatBackupNow();
+                            flashSaved("⚡ 正在执行私信云备份...");
+                        } else {
+                            switchTab("chat", "[data-card-key='chat-cloud-config']");
+                        }
+                    }, 80);
                 });
 
                 // Suite 3: Quick Drawers & Low Level Filter Shortcut
@@ -2857,15 +3222,368 @@ html.dark-layout #mjj-cc-overlay {
                 btnLowLv.type = "button";
                 btnLowLv.textContent = "🛡️ 低等级账号模糊设置";
                 btnLowLv.addEventListener("click", () => {
-                    switchTab("🚫 过滤设置");
-                    const card = content.querySelector("[data-card-key='block_low_level']");
-                    if (card) {
-                        card.scrollIntoView({ behavior: "smooth", block: "center" });
-                        card.style.borderColor = "var(--mjj-accent)";
+                    switchTab("🚫 过滤设置", "[data-card-key='block_low_level']");
+                });
+
+                // 2. Embedded AI Settings Pane ("ai")
+                const aiPane = addNavTab("ai", "🤖 AI 画像设置", "AI");
+                const aiHeaderCard = el("div", "mjj-suite-card", aiPane);
+                const aiHeaderTop = el("div", "mjj-suite-top", aiHeaderCard);
+                const aiHeaderTitle = el("div", "mjj-suite-title", aiHeaderTop);
+                aiHeaderTitle.innerHTML = `<span>🤖 用户 AI 画像与交易深挖引擎</span><span class="mjj-cc-badge">${stats.aiText}</span>`;
+                const aiPaneSw = createSwitchEl(store.get("ai_profile_ext.enabled", true), (on) => {
+                    aiMasterSw.input.checked = on;
+                    commitValue("ai_profile_ext.enabled", on);
+                });
+                aiHeaderTop.appendChild(aiPaneSw.wrap);
+                const aiHeaderDesc = el("div", "mjj-suite-desc", aiHeaderCard);
+                aiHeaderDesc.textContent = "在此统一配置 AI 供应商接口（DeepSeek / OpenAI / 兼容端点）、快速画像与交易深挖采样策略、自定义 Prompt 预设、多图床分享与账号悬停预览。修改后点击底部「保存并生效」即可。";
+                const aiEmbedHost = el("div", "mjj-ai-embed-host", aiPane);
+
+                const mountAiIntoPane = () => {
+                    ensureAiReady();
+                    if (window.__nsxRuntime?.mountAiSettingsInto) {
+                        window.__nsxRuntime.mountAiSettingsInto(
+                            aiEmbedHost,
+                            extraOpts?.preferredProvider || null,
+                            extraOpts?.message || ""
+                        );
+                    } else {
+                        aiEmbedHost.innerHTML = `<div class="mjj-chat-empty">AI 画像模块正在初始化，请开启上方总开关后刷新页面重试。</div>`;
+                    }
+                };
+                tabEnterHooks.set("ai", mountAiIntoPane);
+
+                // 3. Embedded Chat Backup & History Pane ("chat")
+                const chatPane = addNavTab("chat", "💬 私信与云备份", "云端");
+                const chatHeaderCard = el("div", "mjj-suite-card", chatPane);
+                const chatHeaderTop = el("div", "mjj-suite-top", chatHeaderCard);
+                const chatHeaderTitle = el("div", "mjj-suite-title", chatHeaderTop);
+                chatHeaderTitle.innerHTML = `<span>💬 私信记录本地缓存与云端同步</span><span class="mjj-cc-badge">IndexedDB + WebDAV/R2</span>`;
+                const chatPaneSw = createSwitchEl(store.get("chat_backup_ext.enabled", true), (on) => {
+                    chatMasterSw.input.checked = on;
+                    commitValue("chat_backup_ext.enabled", on);
+                });
+                chatHeaderTop.appendChild(chatPaneSw.wrap);
+                const chatHeaderDesc = el("div", "mjj-suite-desc", chatHeaderCard);
+                chatHeaderDesc.textContent = "浏览本地缓存的历史私信、为交易对象添加专属备注，或配置 WebDAV 与 Cloudflare R2 云备份实现跨设备自动同步。";
+
+                // 3A. Local Chat History Card
+                const chatHistCard = el("div", "mjj-suite-card", chatPane);
+                chatHistCard.dataset.cardKey = "chat-history-card";
+                const chatHistTop = el("div", "mjj-suite-top", chatHistCard);
+                const chatHistTitle = el("div", "mjj-suite-title", chatHistTop);
+                chatHistTitle.innerHTML = `<span>📜 本地历史私信记录</span>`;
+                const chatCountBadge = el("span", "mjj-cc-badge", chatHistTitle);
+                chatCountBadge.textContent = "加载中...";
+
+                const chatToolbar = el("div", "mjj-chat-toolbar", chatHistCard);
+                const chatSearchInp = el("input", "mjj-input", chatToolbar);
+                chatSearchInp.type = "search";
+                chatSearchInp.placeholder = "搜索联系人昵称、UID、备注或私信内容...";
+                chatSearchInp.style.flex = "1";
+                chatSearchInp.style.minWidth = "200px";
+
+                const latestWrap = el("div", "mjj-field-ctrl", chatToolbar);
+                const latestLbl = el("span", "mjj-field-label", latestWrap);
+                latestLbl.style.fontSize = "12px";
+                latestLbl.textContent = "包含当前最新会话";
+                const initShowLatest = !!window.chatBackup?.showLatestChats;
+                const showLatestSw = createSwitchEl(initShowLatest, (checked) => {
+                    if (window.chatBackup) {
+                        window.chatBackup.showLatestChats = checked;
+                        try {
+                            GM_setValue(`show_latest_chats_${window.chatBackup.site?.id || code}_${window.chatBackup.userId}`, checked);
+                        } catch { }
+                    }
+                    renderEmbeddedChatList();
+                });
+                latestWrap.appendChild(showLatestSw.wrap);
+
+                const chatActionBtns = el("div", "mjj-btn-row", chatToolbar);
+                const btnSyncNow = el("button", "mjj-btn is-primary", chatActionBtns);
+                btnSyncNow.type = "button";
+                btnSyncNow.textContent = "⚡ 立即云端备份";
+                btnSyncNow.addEventListener("click", async () => {
+                    ensureChatReady();
+                    if (!window.chatBackup) return ctx.ui.alert?.("提示", "请先登录论坛账号");
+                    btnSyncNow.disabled = true;
+                    btnSyncNow.textContent = "⏳ 正在备份...";
+                    try {
+                        const res = await window.chatBackup.performBackup();
+                        flashSaved(res?.partial ? `⚠️ ${res.message}` : "✓ 私信云备份已完成");
+                        window.chatBackup.ui?.showToast?.(res?.partial ? res.message : "私信云端备份成功", res?.partial ? "warning" : "success");
+                    } catch (err) {
+                        window.chatBackup.ui?.showToast?.("备份失败: " + (err?.message || err), "error");
+                    } finally {
+                        btnSyncNow.disabled = false;
+                        btnSyncNow.textContent = "⚡ 立即云端备份";
                     }
                 });
 
-                // 2. Dynamic Category Panes
+                const btnRestoreCloud = el("button", "mjj-btn", chatActionBtns);
+                btnRestoreCloud.type = "button";
+                btnRestoreCloud.textContent = "☁️ 从云端恢复";
+                btnRestoreCloud.addEventListener("click", async () => {
+                    ensureChatReady();
+                    if (!window.chatBackup) return ctx.ui.alert?.("提示", "请先登录论坛账号");
+                    await window.chatBackup.showRestoreOptions();
+                });
+
+                const chatListWrap = el("div", "mjj-chat-list", chatHistCard);
+
+                const renderEmbeddedChatList = async () => {
+                    ensureChatReady();
+                    const cb = window.chatBackup;
+                    if (!cb || !cb.db) {
+                        chatCountBadge.textContent = "未就绪";
+                        chatListWrap.innerHTML = `<div class="mjj-chat-empty">私信数据库尚未就绪（请确认已登录论坛账号，或在私信页面访问一次后查看）。</div>`;
+                        return;
+                    }
+                    try {
+                        showLatestSw.input.checked = !!cb.showLatestChats;
+                        const allChats = (await cb.db.getAllTalkMessages()) || [];
+                        const q = chatSearchInp.value.trim().toLowerCase();
+                        const filtered = allChats
+                            .filter(c => cb.showLatestChats || !c.isLatest)
+                            .filter(c => {
+                                if (!q) return true;
+                                const hay = `${c.member_name || ""} ${c.member_id || ""} ${c.remark || ""} ${c.content || ""}`.toLowerCase();
+                                return hay.includes(q);
+                            })
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                        chatCountBadge.textContent = `${filtered.length} / ${allChats.length} 会话`;
+                        chatListWrap.innerHTML = "";
+                        if (!filtered.length) {
+                            chatListWrap.innerHTML = `<div class="mjj-chat-empty">${allChats.length ? "没有匹配的私信会话（可尝试勾选上方「包含当前最新会话」或清空搜索词）" : "暂无本地缓存的私信记录，打开私信列表后将自动缓存"}</div>`;
+                            return;
+                        }
+
+                        filtered.forEach(chat => {
+                            const row = el("div", "mjj-chat-row", chatListWrap);
+                            const left = el("div", "mjj-chat-left", row);
+                            const avatar = el("img", "mjj-chat-avatar", left);
+                            avatar.src = cb.site?.avatarUrl ? cb.site.avatarUrl(chat.member_id) : `/avatar/${chat.member_id}.png`;
+                            avatar.alt = chat.member_name || "user";
+                            avatar.onerror = () => {
+                                avatar.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlMGUwZTAiLz4KPC9zdmc+";
+                            };
+
+                            const meta = el("div", "mjj-chat-meta", left);
+                            const nameRow = el("div", "mjj-chat-name-row", meta);
+                            const nameEl = el("span", "mjj-chat-name", nameRow);
+                            nameEl.textContent = chat.member_name || "未知用户";
+                            const uidEl = el("span", "mjj-chat-uid", nameRow);
+                            uidEl.textContent = `UID: ${chat.member_id}`;
+                            const remarkEl = el("span", "mjj-chat-remark", nameRow);
+                            if (chat.remark) {
+                                remarkEl.textContent = `🏷️ ${chat.remark}`;
+                            } else {
+                                remarkEl.style.display = "none";
+                            }
+
+                            const msgEl = el("div", "mjj-chat-msg", meta);
+                            const cleanMsg = String(chat.content || "").replace(/<[^>]*>/g, "").trim();
+                            msgEl.textContent = cleanMsg || "(无文本内容)";
+
+                            const right = el("div", "mjj-chat-right", row);
+                            const timeEl = el("span", "mjj-chat-time", right);
+                            try {
+                                const d = new Date(chat.created_at);
+                                timeEl.textContent = Number.isNaN(d.getTime()) ? String(chat.created_at || "") : d.toLocaleString();
+                            } catch {
+                                timeEl.textContent = "";
+                            }
+
+                            const editRemarkBtn = el("button", "mjj-btn", right);
+                            editRemarkBtn.type = "button";
+                            editRemarkBtn.style.padding = "5px 9px";
+                            editRemarkBtn.style.fontSize = "11.5px";
+                            editRemarkBtn.textContent = "✏️ 备注";
+                            editRemarkBtn.addEventListener("click", async () => {
+                                const nextRemark = await cb.ui.showInputDialog(
+                                    `编辑 ${chat.member_name} 的备注`,
+                                    chat.remark || "",
+                                    "最多10个字符，留空删除备注"
+                                );
+                                if (nextRemark === null) return;
+                                const trimmed = nextRemark.trim();
+                                chat.remark = trimmed;
+                                if (trimmed) {
+                                    remarkEl.textContent = `🏷️ ${trimmed}`;
+                                    remarkEl.style.display = "";
+                                } else {
+                                    remarkEl.style.display = "none";
+                                }
+                                try {
+                                    await cb.db.updateRemark(chat.member_id, trimmed);
+                                    flashSaved("✓ 备注已更新");
+                                    cb.performBackup().catch(() => {});
+                                } catch (e) {
+                                    cb.ui?.showToast?.("更新备注失败: " + (e?.message || e), "error");
+                                }
+                            });
+
+                            const openTalkLink = el("a", "mjj-btn is-primary", right);
+                            openTalkLink.href = cb.site?.chatUrl ? cb.site.chatUrl(chat.member_id) : `/notification#/message?mode=talk&to=${chat.member_id}`;
+                            openTalkLink.target = "_blank";
+                            openTalkLink.style.textDecoration = "none";
+                            openTalkLink.style.padding = "5px 10px";
+                            openTalkLink.style.fontSize = "11.5px";
+                            openTalkLink.textContent = "💬 打开对话";
+                        });
+                    } catch (err) {
+                        chatListWrap.innerHTML = `<div class="mjj-chat-empty">读取私信记录失败：${err?.message || err}</div>`;
+                    }
+                };
+                chatSearchInp.addEventListener("input", renderEmbeddedChatList);
+
+                // 3B. Cloud Backup Configuration Card (WebDAV & Cloudflare R2 & Retention)
+                const chatCloudCard = el("div", "mjj-suite-card", chatPane);
+                chatCloudCard.dataset.cardKey = "chat-cloud-config";
+                const chatCloudTitle = el("div", "mjj-suite-title", chatCloudCard);
+                chatCloudTitle.innerHTML = `<span>☁️ WebDAV / Cloudflare R2 云备份配置</span>`;
+                const chatCloudDesc = el("div", "mjj-suite-desc", chatCloudCard);
+                chatCloudDesc.textContent = "支持同时开启 WebDAV 与 Cloudflare R2 双通道备份。保存配置后将自动把最新私信与备注加密同步至云端。";
+
+                const readJsonGm = (key, fallback = {}) => {
+                    try {
+                        const raw = GM_getValue(key, "{}");
+                        return typeof raw === "string" ? JSON.parse(raw) : (raw || fallback);
+                    } catch {
+                        return fallback;
+                    }
+                };
+                const webdavInit = readJsonGm("webdav_config", {});
+                const r2Init = readJsonGm("r2worker_config", {});
+
+                // WebDAV Subcard
+                const webdavSub = el("div", "mjj-subcard", chatCloudCard);
+                const webdavHead = el("div", "mjj-subcard-head", webdavSub);
+                const webdavTitle = el("div", "mjj-subcard-title", webdavHead);
+                webdavTitle.textContent = "📁 WebDAV 备份通道（坚果云 / Nextcloud / Alist）";
+                const webdavSw = createSwitchEl(GM_getValue("backup_webdav_enabled", true), () => {});
+                webdavHead.appendChild(webdavSw.wrap);
+
+                const webdavGrid = el("div", "mjj-card-body", webdavSub);
+                webdavGrid.style.padding = "4px 0 0";
+                const makeSimpleInputRow = (parent, labelText, placeholder, initVal, type = "text", col6 = false) => {
+                    const f = el("div", `mjj-field${col6 ? " col-6" : ""}`, parent);
+                    const l = el("div", "mjj-field-label", f);
+                    l.textContent = labelText;
+                    const inp = el("input", "mjj-input", f);
+                    inp.type = type;
+                    inp.placeholder = placeholder;
+                    inp.value = initVal || "";
+                    inp.style.width = col6 ? "180px" : "320px";
+                    inp.style.maxWidth = "100%";
+                    return inp;
+                };
+                const wdUrlInp = makeSimpleInputRow(webdavGrid, "服务器地址", "https://dav.jianguoyun.com/dav/", webdavInit.serverUrl || "");
+                const wdUserInp = makeSimpleInputRow(webdavGrid, "用户名", "WebDAV 账号", webdavInit.username || "", "text", true);
+                const wdPassInp = makeSimpleInputRow(webdavGrid, "应用密码", "WebDAV 密码 / Token", webdavInit.password || "", "password", true);
+                const wdPathInp = makeSimpleInputRow(webdavGrid, "备份目录路径", "/nodeseek_chat_backup/", webdavInit.backupPath || "/nodeseek_chat_backup/");
+
+                // R2 Subcard
+                const r2Sub = el("div", "mjj-subcard", chatCloudCard);
+                const r2Head = el("div", "mjj-subcard-head", r2Sub);
+                const r2Title = el("div", "mjj-subcard-title", r2Head);
+                r2Title.textContent = "☁️ Cloudflare R2 Worker 备份通道";
+                const r2Sw = createSwitchEl(GM_getValue("backup_r2_enabled", false), () => {});
+                r2Head.appendChild(r2Sw.wrap);
+
+                const r2Grid = el("div", "mjj-card-body", r2Sub);
+                r2Grid.style.padding = "4px 0 0";
+                const r2UrlInp = makeSimpleInputRow(r2Grid, "Worker 地址", "https://your-worker.your-domain.workers.dev", r2Init.workerBaseUrl || "");
+                const r2TokenInp = makeSimpleInputRow(r2Grid, "鉴权密钥 (X-Auth-Token)", "可选，与 Worker 环境变量一致", r2Init.authToken || "", "password", true);
+                const r2PathInp = makeSimpleInputRow(r2Grid, "基础路径前缀", "/nodeseek_chat_backup/", r2Init.basePath || "/nodeseek_chat_backup/", "text", true);
+
+                // Retention Subcard
+                const retSub = el("div", "mjj-subcard", chatCloudCard);
+                const retHead = el("div", "mjj-subcard-head", retSub);
+                const retTitle = el("div", "mjj-subcard-title", retHead);
+                retTitle.textContent = "🗂️ 历史备份清理与保留策略";
+                let curRetType = GM_getValue("retention_type", "count");
+                const retSeg = el("div", "mjj-segmented", retHead);
+                const retBtnCount = el("button", `mjj-seg-btn${curRetType === "count" ? " is-active" : ""}`, retSeg);
+                retBtnCount.type = "button";
+                retBtnCount.textContent = "按数量保留";
+                const retBtnDays = el("button", `mjj-seg-btn${curRetType === "days" ? " is-active" : ""}`, retSeg);
+                retBtnDays.type = "button";
+                retBtnDays.textContent = "按天数保留";
+
+                const retRow = el("div", "mjj-field", retSub);
+                const retRowLbl = el("div", "mjj-field-label", retRow);
+                const retNumInp = el("input", "mjj-input mjj-input-num", retRow);
+                retNumInp.type = "number";
+                retNumInp.min = "1";
+                retNumInp.max = "365";
+                const syncRetUi = () => {
+                    retBtnCount.classList.toggle("is-active", curRetType === "count");
+                    retBtnDays.classList.toggle("is-active", curRetType === "days");
+                    retRowLbl.textContent = curRetType === "count"
+                        ? "最大保留备份文件数（超出后自动清理最旧备份）"
+                        : "最大保留天数（自动清理早于该天数的备份）";
+                    retNumInp.value = String(GM_getValue(curRetType === "count" ? "retention_count" : "retention_days", 30));
+                };
+                syncRetUi();
+                retBtnCount.addEventListener("click", () => { curRetType = "count"; syncRetUi(); });
+                retBtnDays.addEventListener("click", () => { curRetType = "days"; syncRetUi(); });
+
+                const saveCloudRow = el("div", "mjj-btn-row", chatCloudCard);
+                const saveCloudBtn = el("button", "mjj-btn is-primary", saveCloudRow);
+                saveCloudBtn.type = "button";
+                saveCloudBtn.textContent = "💾 保存云备份配置并立即同步";
+                saveCloudBtn.addEventListener("click", async () => {
+                    const wdOn = webdavSw.input.checked;
+                    const r2On = r2Sw.input.checked;
+                    const wdCfg = {
+                        serverUrl: wdUrlInp.value.trim(),
+                        username: wdUserInp.value.trim(),
+                        password: wdPassInp.value.trim(),
+                        backupPath: wdPathInp.value.trim() || "/nodeseek_chat_backup/"
+                    };
+                    const r2Cfg = {
+                        workerBaseUrl: r2UrlInp.value.trim(),
+                        authToken: r2TokenInp.value.trim(),
+                        basePath: r2PathInp.value.trim() || "/nodeseek_chat_backup/"
+                    };
+                    if (wdOn && (!wdCfg.serverUrl || !wdCfg.username || !wdCfg.password)) {
+                        return ctx.ui.alert?.("提示", "已开启 WebDAV 备份，请填写完整的服务器地址、用户名与密码");
+                    }
+                    if (r2On && !r2Cfg.workerBaseUrl) {
+                        return ctx.ui.alert?.("提示", "已开启 Cloudflare R2 备份，请填写 Worker 地址");
+                    }
+                    const numVal = Math.max(1, Math.min(365, parseInt(retNumInp.value, 10) || 30));
+                    GM_setValue("backup_webdav_enabled", wdOn);
+                    GM_setValue("backup_r2_enabled", r2On);
+                    GM_setValue("webdav_config", JSON.stringify(wdCfg));
+                    GM_setValue("r2worker_config", JSON.stringify(r2Cfg));
+                    GM_setValue("retention_type", curRetType);
+                    if (curRetType === "count") GM_setValue("retention_count", numVal);
+                    else GM_setValue("retention_days", numVal);
+                    if (r2On && !wdOn) GM_setValue("backup_provider_type", "r2worker");
+                    else GM_setValue("backup_provider_type", "webdav");
+
+                    flashSaved("✓ 云备份配置已保存");
+                    if (window.chatBackup && (wdOn || r2On)) {
+                        try {
+                            await window.chatBackup.performBackup();
+                            window.chatBackup.ui?.showToast?.("云备份配置已保存并完成同步", "success");
+                        } catch (e) {
+                            window.chatBackup.ui?.showToast?.("配置已保存，但首次同步失败: " + (e?.message || e), "warning");
+                        }
+                    } else {
+                        ctx.ui.success?.("私信云备份配置已保存");
+                    }
+                });
+
+                tabEnterHooks.set("chat", () => {
+                    renderEmbeddedChatList();
+                });
+
+                // 4. Dynamic Category Panes
                 const isObj = v => v && typeof v === "object" && !Array.isArray(v);
                 const inferType = (v, m) => m?.type || (Array.isArray(v) ? "TEXTAREA" : typeof v === "boolean" ? "SWITCH" : typeof v === "number" ? "NUMBER" : "TEXT");
                 const inferVT = (v, m) => m?.valueType || (Array.isArray(v) ? "array" : typeof v === "number" ? "number" : typeof v === "boolean" ? "boolean" : "string");
@@ -3021,11 +3739,8 @@ html.dark-layout #mjj-cc-overlay {
                         lbl.textContent = "AI 模型、API Key 与 Prompt 预设";
                         const btn = el("button", "mjj-btn is-primary", row);
                         btn.type = "button";
-                        btn.textContent = "⚙️ 打开 AI 详细设置";
-                        btn.addEventListener("click", () => {
-                            closeModal();
-                            setTimeout(() => window.__nsxRuntime?.openAiSettings?.(), 60);
-                        });
+                        btn.textContent = "🤖 切换到 AI 画像设置页签";
+                        btn.addEventListener("click", () => switchTab("ai"));
                     } else if (entry.key === "chat_backup_ext") {
                         const row = el("div", "mjj-field", body);
                         const lbl = el("div", "mjj-field-label", row);
@@ -3034,19 +3749,11 @@ html.dark-layout #mjj-cc-overlay {
                         const b1 = el("button", "mjj-btn is-primary", bWrap);
                         b1.type = "button";
                         b1.textContent = "☁️ 备份设置";
-                        b1.addEventListener("click", () => {
-                            closeModal();
-                            ensureChatReady();
-                            setTimeout(() => window.__nsxRuntime?.openChatBackupSettings?.(), 100);
-                        });
+                        b1.addEventListener("click", () => switchTab("chat", "[data-card-key='chat-cloud-config']"));
                         const b2 = el("button", "mjj-btn", bWrap);
                         b2.type = "button";
                         b2.textContent = "📜 历史记录";
-                        b2.addEventListener("click", () => {
-                            closeModal();
-                            ensureChatReady();
-                            setTimeout(() => window.__nsxRuntime?.openChatHistory?.(), 100);
-                        });
+                        b2.addEventListener("click", () => switchTab("chat", "[data-card-key='chat-history-card']"));
                     }
 
                     card.dataset.searchText = `${m.label || ""} ${entry.key} ${body.textContent || ""}`.toLowerCase();
@@ -3062,7 +3769,7 @@ html.dark-layout #mjj-cc-overlay {
                     });
                 });
 
-                // 3. Backup Pane
+                // 5. Backup Pane
                 const backupPane = addNavTab("backup", "📦 配置备份");
                 const bkSuite = el("div", "mjj-suite-card", backupPane);
                 const bkTitle = el("div", "mjj-suite-title", bkSuite);
@@ -3134,7 +3841,7 @@ html.dark-layout #mjj-cc-overlay {
                         return;
                     }
                     panes.forEach((pane, id) => {
-                        if (id === "overview" || id === "backup") {
+                        if (id === "overview" || id === "backup" || id === "ai" || id === "chat") {
                             pane.classList.remove("is-active");
                             return;
                         }
@@ -3160,13 +3867,12 @@ html.dark-layout #mjj-cc-overlay {
                 };
                 window.addEventListener("keydown", onKeyDown);
 
-                switchTab(panes.has(initialTab) ? initialTab : "overview");
+                switchTab(
+                    panes.has(initialTab) ? initialTab : "overview",
+                    highlightCardKey ? `[data-card-key='${highlightCardKey}']` : ""
+                );
                 requestAnimationFrame(() => {
                     overlay.classList.add("mjj-visible");
-                    if (highlightCardKey) {
-                        const targetCard = content.querySelector(`[data-card-key='${highlightCardKey}']`);
-                        targetCard?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }
                 });
             };
 
@@ -3199,16 +3905,48 @@ html.dark-layout #mjj-cc-overlay {
                 }
             });
 
+            const signStates = [{ s1: "❌", s2: "关闭" }, { s1: "🎲", s2: "随机🍗" }, { s1: "📌", s2: "5个🍗" }];
+            const newTabStates = [{ s1: "❌", s2: "关闭" }, { s1: "✅", s2: "开启" }];
+
             window.__nsxRuntime ||= {};
-            window.__nsxRuntime.openControlCenter = (tab = "overview", cardKey = "") => advSettings(tab, cardKey);
+            window.__nsxRuntime.openControlCenter = (tab = "overview", cardKey = "", extraOpts = {}) => advSettings(tab, cardKey, extraOpts);
             window.__nsxRuntime.exportFullConfig = exportConfig;
             window.__nsxRuntime.importFullConfig = importConfig;
+            window.__nsxRuntime.toggleSignIn = () => switchState("sign_in", signStates);
+            window.__nsxRuntime.toggleNewTab = () => switchNewTab();
+            window.__nsxRuntime.triggerTopDrawer = (kind) => {
+                const map = {
+                    filter: ["#nsx-icon-group .filter-dropdown-on", "🚫 过滤设置"],
+                    relation: ["#nsx-icon-group .relation-dropdown-on", "🤝 社交关系"],
+                    history: ["#nsx-icon-group .history-dropdown-on", "🧭 辅助工具"]
+                };
+                const target = map[kind];
+                if (!target) return;
+                const btn = document.querySelector(target[0]);
+                if (btn) btn.click();
+                else advSettings(target[1]);
+            };
+            window.__nsxRuntime.getQuickStatus = () => {
+                const sMethod = store.get(`sign_in.${code}.method`, 0);
+                const sEnabled = store.get(`sign_in.${code}.enabled`, true);
+                const sIdx = !sEnabled ? 0 : (sMethod || 1);
+                const nt = !!store.get("open_post_in_new_tab.enabled", false);
+                const statsNow = collectLiveStats();
+                return {
+                    version: info.version || "1.3.0",
+                    signInText: `${signStates[sIdx]?.s1 || "🎲"} ${signStates[sIdx]?.s2 || "随机🍗"}`,
+                    newTabEnabled: nt,
+                    newTabText: nt ? "✅ 开启" : "❌ 关闭",
+                    aiText: statsNow.aiText,
+                    levelCacheCount: statsNow.levelCacheCount
+                };
+            };
 
             const menuItems = [
                 { name: "control_center", cb: () => advSettings("overview"), text: "🎛️ MJJ 控制中心", states: [] },
-                { name: "sign_in", cb: switchState, text: "自动签到", states: [{ s1: "❌", s2: "关闭" }, { s1: "🎲", s2: "随机🍗" }, { s1: "📌", s2: "5个🍗" }] },
+                { name: "sign_in", cb: switchState, text: "自动签到", states: signStates },
                 { name: "re_sign", cb: reSign, text: "🔂 重试签到", states: [] },
-                { name: "open_post_in_new_tab", cb: switchNewTab, text: "新标签页打开帖子", states: [{ s1: "❌", s2: "关闭" }, { s1: "✅", s2: "开启" }] },
+                { name: "open_post_in_new_tab", cb: switchNewTab, text: "新标签页打开帖子", states: newTabStates },
                 { name: "export_config", cb: exportConfig, text: "📦 导出配置", states: [] },
                 { name: "import_config", cb: importConfig, text: "♻️ 还原配置", states: [], autoClose: false },
                 { name: "feedback", cb: () => GM_openInTab("https://github.com/Youngv/MJJ/issues", { active: true, insert: true, setParent: true }), text: "💬 反馈 & 建议", states: [] }
@@ -8772,11 +9510,48 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
   function applySettingsUiState(){const ui=loadSettingsUiState();settingsMainTab=ui.tab||"ai";if(hasUsableSettingsRect(ui.rect)&&!isLegacyBrokenSettingsRect(ui.rect)){settingsDialogEl.style.width=`${ui.rect.width}px`;settingsDialogEl.style.height=`${ui.rect.height}px`;settingsDialogEl.style.left=`${ui.rect.left}px`;settingsDialogEl.style.top=`${ui.rect.top}px`;constrainSettings();}else positionSettingsDefault();}
   function persistSettingsRect(){const r=settingsDialogEl.getBoundingClientRect();saveSettingsUiState({tab:settingsMainTab,rect:{left:r.left,top:r.top,width:r.width,height:r.height}});}
 
+  function mountAiSettingsInto(hostEl,preferredProvider=null,message=""){
+    if(!hostEl)return;
+    hideAccountPreview(true);
+    settingsOverlay.style.display="none";
+    settingsDialogEl.classList.add("mjj-embedded-ai");
+    if(settingsDialogEl.parentElement!==hostEl){
+      hostEl.innerHTML="";
+      hostEl.appendChild(settingsDialogEl);
+    }
+    const ui=loadSettingsUiState();
+    settingsMainTab=ui.tab||"ai";
+    settingsDraft=cloneSettings(AI_SETTINGS);
+    settingsOriginalSnapshot=settingsSnapshot(settingsDraft);
+    settingsTabProvider=preferredProvider&&PROVIDER_DEFS[preferredProvider]?preferredProvider:settingsDraft.activeProvider;
+    renderSettingsMainTabs();
+    renderSettingsPane();
+    setSettingsStatus(message,message?"warning":"");
+  }
   function openSettingsModal(preferredProvider=null,message=""){
     hideAccountPreview(true);
+    if(window.__nsxRuntime?.openControlCenter){
+      window.__nsxRuntime.openControlCenter("ai","",{preferredProvider,message});
+      return;
+    }
+    if(settingsDialogEl.parentElement!==settingsOverlay){
+      settingsDialogEl.classList.remove("mjj-embedded-ai");
+      settingsOverlay.appendChild(settingsDialogEl);
+    }
     settingsDraft=cloneSettings(AI_SETTINGS);settingsOriginalSnapshot=settingsSnapshot(settingsDraft);settingsTabProvider=preferredProvider&&PROVIDER_DEFS[preferredProvider]?preferredProvider:settingsDraft.activeProvider;settingsOverlay.style.display="block";applySettingsUiState();renderSettingsMainTabs();renderSettingsPane();setSettingsStatus(message,message?"warning":"");
   }
-  function tryCloseSettings(){if(settingsDirty()&&!confirm("当前配置有未保存的修改。\n\n确定放弃这些修改？"))return;settingsOverlay.style.display="none";settingsDraft=null;setSettingsStatus();}
+  function tryCloseSettings(){
+    if(settingsDialogEl.classList.contains("mjj-embedded-ai")){
+      settingsDraft=cloneSettings(AI_SETTINGS);
+      settingsOriginalSnapshot=settingsSnapshot(settingsDraft);
+      renderSettingsMainTabs();
+      renderSettingsPane();
+      setSettingsStatus("已还原未保存的修改。","warning");
+      return;
+    }
+    if(settingsDirty()&&!confirm("当前配置有未保存的修改。\n\n确定放弃这些修改？"))return;
+    settingsOverlay.style.display="none";settingsDraft=null;setSettingsStatus();
+  }
 
   function validateSettingsDraft(){
     const activeId=settingsDraft.activeProvider,cfg=settingsDraft.providers[activeId];
@@ -8830,13 +9605,21 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     if(AI_SETTINGS.accountPreview?.enabled!==true)hideAccountPreview(true);
     const newFastFingerprint=activeConfigFingerprint("fast"),newDeepFingerprint=activeConfigFingerprint("deep");
     invalidateMemoryResults(oldFastFingerprint!==newFastFingerprint,oldDeepFingerprint!==newDeepFingerprint);
-    settingsOriginalSnapshot=settingsSnapshot(settingsDraft);persistSettingsRect();settingsOverlay.style.display="none";settingsDraft=null;
+    settingsOriginalSnapshot=settingsSnapshot(settingsDraft);
+    if(settingsDialogEl.classList.contains("mjj-embedded-ai")){
+      saveSettingsUiState({tab:settingsMainTab});
+      setSettingsStatus("✓ AI 画像配置已保存并立即生效！","success");
+      window.__nsxRuntime?.flashControlCenterSaved?.("✓ AI 配置已保存并生效");
+    }else{
+      persistSettingsRect();settingsOverlay.style.display="none";settingsDraft=null;
+    }
     if(panel.style.display!=="none")setMetaLines([`设置已保存 · 当前 AI：${aiDisplayName()}。不同采样策略 / Prompt 预设 / 模型会使用独立缓存签名。`]);
   }catch(error){setSettingsStatus(error?.message||"配置保存失败。","error");}});
   settingsCloseEl.addEventListener("click",tryCloseSettings);settingsCancelEl.addEventListener("click",tryCloseSettings);
   settingsOverlay.addEventListener("click",(e)=>{if(e.target===settingsOverlay)e.stopPropagation();});settingsDialogEl.addEventListener("click",e=>e.stopPropagation());
   settingsOpenEl.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openSettingsModal(AI_PROVIDER);});
   window.__nsxRuntime ||= {};
+  window.__nsxRuntime.mountAiSettingsInto = mountAiSettingsInto;
   window.__nsxRuntime.openAiSettings = () => openSettingsModal(AI_PROVIDER);
   window.__nsxRuntime.getAiStatusSummary = () => ({
     provider: AI_PROVIDER,
@@ -15242,7 +16025,11 @@ ${escapeDataForPrompt(payload)}
       btn.href = "javascript:void(0)";
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        window.chatBackup?.showHistoryChats();
+        if (window.__nsxRuntime?.openControlCenter) {
+          window.__nsxRuntime.openControlCenter("chat", "chat-history-card");
+        } else {
+          window.chatBackup?.showHistoryChats();
+        }
       });
 
       // 将按钮插入到私信链接后面
@@ -15274,12 +16061,12 @@ ${escapeDataForPrompt(payload)}
 
       const bgColor =
         type === "success"
-          ? "#28a745"
+          ? "#10b981"
           : type === "error"
-          ? "#dc3545"
+          ? "#ef4444"
           : type === "warning"
-          ? "#ffc107"
-          : "#007bff";
+          ? "#f59e0b"
+          : "#0ea5e9";
 
       toast.style.cssText = `
                 position: fixed;
@@ -15287,17 +16074,18 @@ ${escapeDataForPrompt(payload)}
                 right: 20px;
                 background: ${bgColor};
                 color: white;
-                padding: 12px 20px;
-                border-radius: 6px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                z-index: 10001;
-                font-size: 14px;
+                padding: 10px 18px;
+                border-radius: 10px;
+                box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.28);
+                z-index: 100080;
+                font-size: 13px;
+                font-weight: 600;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                max-width: 300px;
+                max-width: 320px;
                 word-wrap: break-word;
                 opacity: 0;
                 transform: translateX(100%);
-                transition: all 0.3s ease;
+                transition: all 0.25s ease;
             `;
 
       toast.textContent = message;
@@ -15338,8 +16126,9 @@ ${escapeDataForPrompt(payload)}
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: 10000;
+          background: rgba(15, 23, 42, 0.5);
+          backdrop-filter: blur(4px);
+          z-index: 100075;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -15350,23 +16139,25 @@ ${escapeDataForPrompt(payload)}
         // 创建对话框
         const dialog = document.createElement("div");
         dialog.style.cssText = `
-          background: white;
-          border-radius: 8px;
+          background: var(--mjj-bg-card, #ffffff);
+          color: var(--mjj-text, #0f172a);
+          border: 1px solid var(--mjj-border, #e2e8f0);
+          border-radius: 14px;
           padding: 20px;
           min-width: 320px;
           max-width: 400px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-          transform: scale(0.9);
+          box-shadow: var(--mjj-shadow, 0 20px 50px rgba(0, 0, 0, 0.3));
+          transform: scale(0.95);
           transition: transform 0.2s;
         `;
 
         // 标题
         const titleEl = document.createElement("div");
         titleEl.style.cssText = `
-          font-size: 16px;
-          font-weight: bold;
-          margin-bottom: 16px;
-          color: #333;
+          font-size: 15px;
+          font-weight: 700;
+          margin-bottom: 14px;
+          color: var(--mjj-text, #0f172a);
         `;
         titleEl.textContent = title;
 
@@ -15379,9 +16170,11 @@ ${escapeDataForPrompt(payload)}
         input.style.cssText = `
           width: 100%;
           padding: 8px 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-size: 14px;
+          border: 1px solid var(--mjj-border, #e2e8f0);
+          background: var(--mjj-bg-sub, #f8fafc);
+          color: var(--mjj-text, #0f172a);
+          border-radius: 8px;
+          font-size: 13.5px;
           box-sizing: border-box;
           outline: none;
         `;
@@ -15391,7 +16184,7 @@ ${escapeDataForPrompt(payload)}
         counter.style.cssText = `
           text-align: right;
           font-size: 12px;
-          color: #999;
+          color: var(--mjj-text-sub, #64748b);
           margin-top: 4px;
         `;
         counter.textContent = `${input.value.length}/10`;
@@ -15400,9 +16193,9 @@ ${escapeDataForPrompt(payload)}
         input.addEventListener("input", () => {
           counter.textContent = `${input.value.length}/10`;
           if (input.value.length >= 10) {
-            counter.style.color = "#dc3545";
+            counter.style.color = "#ef4444";
           } else {
-            counter.style.color = "#999";
+            counter.style.color = "var(--mjj-text-sub, #64748b)";
           }
         });
 
@@ -15419,12 +16212,14 @@ ${escapeDataForPrompt(payload)}
         const cancelBtn = document.createElement("button");
         cancelBtn.textContent = "取消";
         cancelBtn.style.cssText = `
-          padding: 8px 16px;
-          border: 1px solid #ddd;
-          background: white;
-          border-radius: 4px;
+          padding: 7px 14px;
+          border: 1px solid var(--mjj-border, #e2e8f0);
+          background: var(--mjj-bg-sub, #f8fafc);
+          color: var(--mjj-text, #0f172a);
+          border-radius: 8px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 13px;
+          font-weight: 600;
         `;
         cancelBtn.addEventListener("click", () => {
           closeDialog(null);
@@ -15434,9 +16229,9 @@ ${escapeDataForPrompt(payload)}
         const confirmBtn = document.createElement("button");
         confirmBtn.textContent = "确定";
         confirmBtn.style.cssText = `
-          padding: 8px 16px;
+          padding: 7px 14px;
           border: none;
-          background: #007bff;
+          background: var(--mjj-accent, #10b981);
           color: white;
           border-radius: 4px;
           cursor: pointer;
@@ -16133,35 +16928,39 @@ ${escapeDataForPrompt(payload)}
 
         // 显示来源选择界面
         let sourceContent = `
-          <div style="margin-bottom: 20px; padding: 12px; background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 4px;">
-            <strong>💡 提示：</strong>请选择要从哪个位置恢复备份
+          <div style="margin-bottom: 16px; padding: 12px 14px; background: var(--mjj-accent-soft, rgba(16,185,129,0.12)); border: 1px solid rgba(16,185,129,0.35); border-radius: 10px; color: var(--mjj-text, #0f172a); font-size: 13px;">
+            <strong>💡 提示：</strong>请选择要从哪个云端通道恢复私信备份
           </div>
           <div style="display: flex; gap: 12px; justify-content: center;">
         `;
 
         if (webdavEnabled) {
           sourceContent += `
-            <button class="nodeseek-btn nodeseek-btn-success" id="restore-from-webdav" style="flex: 1; padding: 20px;">
-              <div style="font-size: 18px; margin-bottom: 8px;">📁</div>
-              <div style="font-weight: bold;">WebDAV</div>
-              <div style="font-size: 12px; opacity: 0.8;">从 WebDAV 恢复</div>
+            <button class="nodeseek-btn nodeseek-btn-success" id="restore-from-webdav" style="flex: 1; padding: 18px; border-radius: 12px;">
+              <div style="font-size: 20px; margin-bottom: 6px;">📁</div>
+              <div style="font-weight: 700;">WebDAV</div>
+              <div style="font-size: 12px; opacity: 0.85;">从 WebDAV 恢复</div>
             </button>
           `;
         }
 
         if (r2Enabled) {
           sourceContent += `
-            <button class="nodeseek-btn nodeseek-btn-success" id="restore-from-r2" style="flex: 1; padding: 20px;">
-              <div style="font-size: 18px; margin-bottom: 8px;">☁️</div>
-              <div style="font-weight: bold;">Cloudflare R2</div>
-              <div style="font-size: 12px; opacity: 0.8;">从 R2 恢复</div>
+            <button class="nodeseek-btn nodeseek-btn-success" id="restore-from-r2" style="flex: 1; padding: 18px; border-radius: 12px;">
+              <div style="font-size: 20px; margin-bottom: 6px;">☁️</div>
+              <div style="font-weight: 700;">Cloudflare R2</div>
+              <div style="font-size: 12px; opacity: 0.85;">从 R2 恢复</div>
             </button>
           `;
         }
 
+        if (!webdavEnabled && !r2Enabled) {
+          sourceContent += `<div style="padding: 20px; color: var(--mjj-text-sub, #64748b); font-size: 13px;">请先在下方开启并保存 WebDAV 或 Cloudflare R2 备份配置。</div>`;
+        }
+
         sourceContent += "</div>";
 
-        const sourceModal = this.ui.createModal("选择备份来源", sourceContent, { width: "500px" });
+        const sourceModal = this.ui.createModal("选择备份来源", sourceContent, { width: "480px" });
 
         // WebDAV 恢复
         sourceModal.querySelector('#restore-from-webdav')?.addEventListener('click', async () => {
@@ -16200,29 +16999,27 @@ ${escapeDataForPrompt(payload)}
         Utils.debug(`从 ${providerName} 找到 ${backups.length} 个备份文件`);
 
         let content = `
-                    <div style="margin-bottom: 16px; padding: 12px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-size: 14px;">
-                        <strong>⚠️ 重要提示：</strong>恢复操作会<strong>完全覆盖</strong>现有的本地聊天数据，原有数据将被删除且无法恢复！
+                    <div style="margin-bottom: 14px; padding: 11px 14px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; font-size: 13px; color: var(--mjj-text, #0f172a);">
+                        <strong>⚠️ 重要提示：</strong>恢复操作会<strong>完全覆盖</strong>现有的本地聊天数据！
                     </div>
-                    <div style="margin-bottom: 12px; padding: 8px; background: #f0f9ff; border-radius: 4px; text-align: center;">
+                    <div style="margin-bottom: 12px; padding: 8px; background: var(--mjj-bg-sub, #f8fafc); border: 1px solid var(--mjj-border, #e2e8f0); border-radius: 8px; text-align: center; font-size: 13px; color: var(--mjj-text, #0f172a);">
                         <strong>备份来源：${providerName}</strong>
                     </div>
-                    <div style="max-height: 300px; overflow-y: auto;">
+                    <div style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
                 `;
 
         backups.forEach((backup, index) => {
           const date = new Date(backup.lastModified).toLocaleString();
           const fileName = backup.href.split("/").pop();
           content += `
-                        <div style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;"
+                        <div style="padding: 11px 14px; border: 1px solid var(--mjj-border, #e2e8f0); border-radius: 10px; background: var(--mjj-bg-sub, #f8fafc); cursor: pointer; transition: border-color 0.15s;"
                              data-backup="${backup.href}"
-                             data-provider="${providerName}"
-                             onmouseover="this.style.background='#f8f9fa'"
-                             onmouseout="this.style.background='transparent'">
-                            <div style="font-weight: 500; margin-bottom: 4px;">备份 ${
+                             data-provider="${providerName}">
+                            <div style="font-weight: 700; font-size: 13px; color: var(--mjj-text, #0f172a); margin-bottom: 3px;">📦 备份 #${
                               index + 1
                             }</div>
-                            <div style="font-size: 12px; color: #666; margin-bottom: 2px;">时间: ${date}</div>
-                            <div style="font-size: 11px; color: #999;">文件: ${fileName}</div>
+                            <div style="font-size: 12px; color: var(--mjj-text-sub, #64748b); margin-bottom: 2px;">时间: ${date}</div>
+                            <div style="font-size: 11px; color: var(--mjj-text-sub, #64748b); font-family: monospace;">文件: ${fileName}</div>
                         </div>
                     `;
         });
@@ -16439,6 +17236,10 @@ ${escapeDataForPrompt(payload)}
      */
     registerMenuCommands() {
       const openBackupConfigModal = () => {
+        if (window.__nsxRuntime?.openControlCenter) {
+          window.__nsxRuntime.openControlCenter("chat", "chat-cloud-config");
+          return;
+        }
         this.ui.showBackupConfig(this.backup, () => {
           const providerType = GM_getValue(
             "backup_provider_type",
@@ -16467,6 +17268,10 @@ ${escapeDataForPrompt(payload)}
       };
 
       const openHistoryChats = () => {
+        if (window.__nsxRuntime?.openControlCenter) {
+          window.__nsxRuntime.openControlCenter("chat", "chat-history-card");
+          return;
+        }
         this.showHistoryChats();
       };
 

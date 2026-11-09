@@ -115,7 +115,7 @@
     }
   });
 
-  // 4. Listen for Popup menu requests
+  // 4. Listen for Popup menu & action requests
   let pendingMenuCallbacks = new Map();
   window.addEventListener("__NSX_MAIN_MENU_LIST__", (e) => {
     let data;
@@ -127,7 +127,7 @@
     const cb = pendingMenuCallbacks.get(data?.reqId);
     if (cb) {
       pendingMenuCallbacks.delete(data.reqId);
-      cb(data.menus || []);
+      cb({ menus: data.menus || [], status: data.status || null });
     }
   });
 
@@ -137,12 +137,12 @@
       const timer = setTimeout(() => {
         if (pendingMenuCallbacks.has(reqId)) {
           pendingMenuCallbacks.delete(reqId);
-          sendResponse({ menus: [] });
+          sendResponse({ menus: [], status: null });
         }
       }, 800);
-      pendingMenuCallbacks.set(reqId, (menus) => {
+      pendingMenuCallbacks.set(reqId, (payload) => {
         clearTimeout(timer);
-        sendResponse({ menus });
+        sendResponse(payload);
       });
       dispatchToMain("GET_MENUS", { reqId });
       return true;
@@ -150,6 +150,17 @@
 
     if (msg?.type === "POPUP_RUN_MENU") {
       dispatchToMain("RUN_MENU", { id: msg.id });
+      sendResponse({ ok: true });
+      return false;
+    }
+
+    if (msg?.type === "POPUP_ACTION") {
+      dispatchToMain("POPUP_ACTION", {
+        action: msg.action,
+        tab: msg.tab,
+        cardKey: msg.cardKey,
+        drawer: msg.drawer
+      });
       sendResponse({ ok: true });
       return false;
     }

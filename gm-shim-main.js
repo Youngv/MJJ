@@ -142,11 +142,33 @@
       menuCommands.forEach((v) => {
         menus.push({ id: v.id, label: v.label });
       });
+      let status = null;
+      try {
+        status = window.__nsxRuntime?.getQuickStatus?.() || null;
+      } catch {}
       window.dispatchEvent(
         new CustomEvent("__NSX_MAIN_MENU_LIST__", {
-          detail: JSON.stringify({ reqId, menus })
+          detail: JSON.stringify({ reqId, menus, status })
         })
       );
+      return;
+    }
+
+    if (msg.type === "POPUP_ACTION") {
+      const d = msg.detail || {};
+      const rt = window.__nsxRuntime;
+      if (!rt) return;
+      try {
+        if (d.action === "openControlCenter") rt.openControlCenter?.(d.tab || "overview", d.cardKey || "");
+        else if (d.action === "triggerTopDrawer") rt.triggerTopDrawer?.(d.drawer);
+        else if (d.action === "toggleSignIn") rt.toggleSignIn?.();
+        else if (d.action === "toggleNewTab") rt.toggleNewTab?.();
+        else if (d.action === "runChatBackupNow") rt.runChatBackupNow?.();
+        else if (d.action === "exportFullConfig") rt.exportFullConfig?.();
+        else if (d.action === "importFullConfig") rt.importFullConfig?.();
+      } catch (err) {
+        console.error("[MJJ Popup Action Error]", err);
+      }
       return;
     }
 
@@ -209,11 +231,11 @@
   const GM_info = {
     script: {
       name: "MJJ",
-      version: "1.2.0",
+      version: "1.3.0",
       namespace: "http://www.nodeseek.com/"
     },
     scriptHandler: "NodeseekProExtension",
-    version: "1.2.0"
+    version: "1.3.0"
   };
 
   function GM_getValue(key, defaultValue) {
