@@ -1,4 +1,4 @@
-// Nodeseek Pro All-in-One - ISOLATED World Bridge (content-bridge.js)
+// MJJ - ISOLATED World Bridge (content-bridge.js)
 (function () {
   "use strict";
 

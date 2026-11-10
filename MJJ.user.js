@@ -2,7 +2,7 @@
 // @name         MJJ
 // @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、多图床上传、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
-// @version      1.4.4
+// @version      1.4.5
 // @match        *://www.nodeseek.com/*
 // @match        *://www.deepflood.com/*
 // @require      https://s4.zstatic.net/ajax/libs/layui/2.10.3/layui.min.js
@@ -1235,12 +1235,15 @@
         } else {
             const aiWrap = bar.querySelector(".nsx-ai-wrap");
             const aiSep = bar.querySelector(".nsx-ai-sep");
+            const imgHostContainer = bar.querySelector("#nodeimage-toolbar-container");
+            const fullScreenEl = bar.querySelector(".i-icon-full-screen-one, .i-icon-off-screen-one")?.parentElement || bar.querySelector(".toolbar-item.right");
+            const rightAnchor = aiSep || aiWrap || imgHostContainer || fullScreenEl;
             if (aiSep) {
                 aiSep.before(wrap);
-            } else if (aiWrap) {
-                const prev = aiWrap.previousElementSibling;
-                if (prev?.classList?.contains("sep")) aiWrap.before(wrap);
-                else aiWrap.before(sep, wrap);
+            } else if (rightAnchor) {
+                const prev = rightAnchor.previousElementSibling;
+                if (prev?.classList?.contains("sep")) rightAnchor.before(wrap);
+                else rightAnchor.before(sep, wrap);
             } else {
                 const last = bar.lastElementChild;
                 if (last?.classList?.contains("sep")) bar.append(wrap);
@@ -3020,8 +3023,16 @@ html.dark-layout #mjj-cc-overlay {
             }
         }
         BACKUP_LOCAL_KEYS.forEach(key => {
-            if (Object.prototype.hasOwnProperty.call(importedLs, key)) writeBackupLocalValue(key, importedLs[key]);
-            else if (shouldClearMissingLocalKeys) localStorage.removeItem(key);
+            if (Object.prototype.hasOwnProperty.call(importedLs, key)) {
+                writeBackupLocalValue(key, importedLs[key]);
+                if (key === "nodeseek_quick_reply" && importedLs[key] && typeof importedLs[key] === "object") {
+                    try { GM_setValue("nodeseek_quick_reply", importedLs[key]); } catch { }
+                } else if (key === "nodeseek_quick_reply_auto_submit") {
+                    try { GM_setValue("nodeseek_quick_reply_auto_submit", String(importedLs[key])); } catch { }
+                }
+            } else if (shouldClearMissingLocalKeys && key !== "nodeseek_quick_reply" && key !== "nodeseek_quick_reply_auto_submit") {
+                localStorage.removeItem(key);
+            }
         });
         if (Object.prototype.hasOwnProperty.call(importedIdb, "nsPreferenceConfiguration") && importedIdb.nsPreferenceConfiguration && typeof importedIdb.nsPreferenceConfiguration === "object") {
             await writeNsPreferenceConfig(importedIdb.nsPreferenceConfiguration);
@@ -4572,15 +4583,15 @@ html.dark-layout #mjj-cc-overlay {
         order: 120,
         cfg: { quick_comment: { enabled: true } },
         meta: { quick_comment: { label: "快捷评论", group: "🧭 辅助工具" } },
-        match: ctx => ctx.loggedIn && ctx.isPost && ctx.store.get("quick_comment.enabled", true),
+        match: ctx => ctx.loggedIn && (ctx.isPost || location.pathname.startsWith("/new-discussion") || location.pathname.startsWith("/notification")) && ctx.store.get("quick_comment.enabled", true),
         init(ctx) {
-            const editor = $(".md-editor"), parent = $("#back-to-parent"), group = $("#fast-nav-button-group");
-            if (!editor || !parent || !group) return;
+            let editor = $(".md-editor"), parent = $("#back-to-parent"), group = $("#fast-nav-button-group");
             let open = false;
+            let docClickBound = false;
             addStyle("nsx-quick-reply", `
 .mde-toolbar > .sep{width:2px !important;height:20px !important;background:#e5e7eb !important;margin:0 6px !important;flex-shrink:0 !important;display:inline-block !important}
-.nsx-quick-reply-wrap{position:relative;display:inline-flex;align-items:center}
-.nsx-quick-reply-btn{height:auto;line-height:1;border:none;background:transparent;color:var(--text-color,#333);padding:0;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
+.mde-toolbar .nsx-quick-reply-wrap,.nsx-quick-reply-wrap{position:relative;display:inline-flex !important;align-items:center;width:auto !important;min-width:auto !important;padding:0 6px !important;flex-shrink:0 !important;white-space:nowrap !important}
+.mde-toolbar .nsx-quick-reply-btn,.nsx-quick-reply-btn{width:auto !important;height:auto !important;line-height:1.2 !important;border:none;background:transparent;color:var(--text-color,#333);padding:0 !important;cursor:pointer;font-size:12px;display:inline-flex !important;align-items:center;gap:4px;white-space:nowrap !important;flex-shrink:0 !important}
 .nsx-quick-reply-btn:hover{color:#1677ff}
 .nsx-quick-reply-menu{position:absolute;left:0;top:36px;z-index:1002;min-width:280px;max-width:min(500px,88vw);background:var(--bg-color,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.12);padding:8px;display:none}
 .nsx-quick-reply-menu.show{display:block}
@@ -4624,26 +4635,40 @@ html.dark-layout #mjj-cc-overlay {
 `);
 
             const show = e => {
-                if (open) return;
+                const curEditor = $(".md-editor") || editor;
+                if (!curEditor || open) return;
+                editor = curEditor;
                 e?.preventDefault?.();
-                editor.style.cssText = `position:fixed;bottom:0;margin:0;width:100%;max-width:${editor.clientWidth || 720}px;z-index:999`;
+                curEditor.style.cssText = `position:fixed;bottom:0;margin:0;width:100%;max-width:${curEditor.clientWidth || 720}px;z-index:999`;
                 addClose();
                 open = true;
+                requestAnimationFrame(mountQuickReplyMenu);
             };
 
-            const btn = parent.cloneNode(true);
-            btn.id = "back-to-comment";
-            btn.innerHTML = `<svg class="iconpark-icon" style="width:24px;height:24px"><use href="#comments"></use></svg>`;
-            btn.onclick = show;
-            parent.before(btn);
+            if (parent && group && !$("#back-to-comment")) {
+                const btn = parent.cloneNode(true);
+                btn.id = "back-to-comment";
+                btn.innerHTML = `<svg class="iconpark-icon" style="width:24px;height:24px"><use href="#comments"></use></svg>`;
+                btn.onclick = show;
+                parent.before(btn);
+            }
 
             $$(".nsk-post .comment-menu,.comment-container .comments").forEach(el => el.addEventListener("click", e => {
                 if (["引用", "回复", "编辑"].includes(e.target?.textContent)) show(e);
             }, true));
 
+            window.__nsxRuntime ||= {};
+            window.__nsxRuntime.ensureQuickReplyToolbar = mountQuickReplyMenu;
+
             mountQuickReplyMenu();
+            document.addEventListener("click", e => {
+                if (e.target?.closest?.(".md-editor, .tab-option")) {
+                    setTimeout(mountQuickReplyMenu, 60);
+                }
+            });
 
             function addClose() {
+                const curEditor = $(".md-editor") || editor;
                 const tb = $("#editor-body .window_header > :last-child");
                 if (!tb || $(".nsx-close-editor")) return;
                 const cb = tb.cloneNode(true);
@@ -4654,22 +4679,45 @@ html.dark-layout #mjj-cc-overlay {
                     sp.classList.replace("i-icon-full-screen-one", "i-icon-close");
                     sp.innerHTML = `<svg width="16" height="16" viewBox="0 0 48 48" fill="none"><path d="M8 8L40 40M8 40L40 8" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 }
-                cb.onclick = () => { editor.style.cssText = ""; cb.remove(); open = false; };
+                cb.onclick = () => { if (curEditor) curEditor.style.cssText = ""; cb.remove(); open = false; };
                 tb.after(cb);
             }
 
             function mountQuickReplyMenu() {
-                const bar = editor.querySelector(".mde-toolbar");
-                if (!bar || bar.querySelector(".nsx-quick-reply-wrap")) return;
+                const curEditor = $(".md-editor") || editor;
+                if (!curEditor) return;
+                editor = curEditor;
+                const bar = curEditor.querySelector(".mde-toolbar");
+                if (!bar) return;
+                const existingWrap = bar.querySelector(".nsx-quick-reply-wrap");
+                const imgHostContainer = bar.querySelector("#nodeimage-toolbar-container");
+                if (existingWrap) {
+                    if (imgHostContainer && existingWrap.compareDocumentPosition(imgHostContainer) & Node.DOCUMENT_POSITION_PRECEDING) {
+                        const existingSep = bar.querySelector(".nsx-quick-reply-sep");
+                        if (existingSep) imgHostContainer.before(existingSep);
+                        imgHostContainer.before(existingWrap);
+                    }
+                    return;
+                }
                 const state = { groupIdx: 0 };
 
+                const vAttr = [...(bar.querySelector(".toolbar-item")?.attributes || [])].find(a => a.name.startsWith("data-v-"))?.name;
+                const setV = el => vAttr && el.setAttribute(vAttr, "");
+
                 const sep = document.createElement("div");
+                sep.className = "sep nsx-quick-reply-sep";
+                setV(sep);
+
                 const wrap = document.createElement("div");
                 wrap.className = "nsx-quick-reply-wrap toolbar-item";
+                setV(wrap);
+
                 const btn = document.createElement("span");
                 btn.className = "nsx-quick-reply-btn i-icon";
-                btn.title = "快捷回复 - Nodeseek Pro";
+                btn.title = "快捷回复 - MJJ";
                 btn.textContent = "快捷回复";
+                setV(btn);
+
                 const menu = document.createElement("div");
                 menu.className = "nsx-quick-reply-menu";
 
@@ -4772,7 +4820,7 @@ html.dark-layout #mjj-cc-overlay {
                     if (!groups.length) {
                         const empty = document.createElement("div");
                         empty.className = "nsx-quick-reply-empty";
-                        empty.textContent = "未找到快捷回复，请先在快捷回复面板中配置。";
+                        empty.textContent = "当前暂无快捷回复，请点击右上角「+ 分组」或左下角「新增」添加。";
                         list.appendChild(empty);
                         const addBtn = document.createElement("button");
                         addBtn.type = "button";
@@ -4811,10 +4859,9 @@ html.dark-layout #mjj-cc-overlay {
                             const groupName = g.name || "";
                             if (!groupName) return;
                             const doDel = () => {
-                                let parsed = {};
-                                try { parsed = JSON.parse(localStorage.getItem("nodeseek_quick_reply") || "{}") || {}; } catch { parsed = {}; }
+                                const parsed = readQuickReplyRawObject();
                                 delete parsed[groupName];
-                                localStorage.setItem("nodeseek_quick_reply", JSON.stringify(parsed));
+                                writeQuickReplyRawObject(parsed);
                                 state.groupIdx = Math.max(0, Math.min(state.groupIdx, Object.keys(parsed).length - 1));
                                 renderMenu();
                             };
@@ -4867,13 +4914,12 @@ html.dark-layout #mjj-cc-overlay {
                             e.stopPropagation();
                             if (!curGroupName) return;
                             const doDel = () => {
-                                let parsed = {};
-                                try { parsed = JSON.parse(localStorage.getItem("nodeseek_quick_reply") || "{}") || {}; } catch { parsed = {}; }
+                                const parsed = readQuickReplyRawObject();
                                 const raw = parsed[curGroupName];
                                 const arr = normalizeItems(raw).map(x => ({ title: x.label, content: x.text }));
                                 arr.splice(idx, 1);
                                 parsed[curGroupName] = arr;
-                                localStorage.setItem("nodeseek_quick_reply", JSON.stringify(parsed));
+                                writeQuickReplyRawObject(parsed);
                                 renderMenu();
                             };
                             if (ctx.ui?.confirm) ctx.ui.confirm("确认删除?", `确定要删除这条快捷回复吗？`, doDel);
@@ -4890,7 +4936,8 @@ html.dark-layout #mjj-cc-overlay {
                             const autoSendCheck = document.getElementById("nsx-quick-reply-autosend");
                             if (autoSendCheck && autoSendCheck.checked) {
                                 setTimeout(() => {
-                                    const submitBtn = editor.querySelector(".md-editor button.submit.btn");
+                                    const curEditor = $(".md-editor") || editor;
+                                    const submitBtn = curEditor?.querySelector("button.submit.btn") || document.querySelector(".md-editor button.submit.btn");
                                     if (submitBtn) submitBtn.click();
                                 }, 100);
                             }
@@ -4907,16 +4954,19 @@ html.dark-layout #mjj-cc-overlay {
                     autoSendCheck.type = "checkbox";
                     autoSendCheck.id = "nsx-quick-reply-autosend";
                     autoSendCheck.className = "nsx-quick-reply-autosend-check";
-                    // 从localStorage读取上次设置（兼容NS综合.js的key）
-                    const savedAutoSend = localStorage.getItem("nodeseek_quick_reply_auto_submit") === "true";
+                    // 从localStorage与GM存储读取上次设置
+                    const savedAutoSendRaw = localStorage.getItem("nodeseek_quick_reply_auto_submit") ?? GM_getValue("nodeseek_quick_reply_auto_submit", "false");
+                    const savedAutoSend = String(savedAutoSendRaw) === "true";
                     autoSendCheck.checked = savedAutoSend;
                     const autoSendLabel = document.createElement("label");
                     autoSendLabel.htmlFor = "nsx-quick-reply-autosend";
                     autoSendLabel.className = "nsx-quick-reply-autosend-label";
                     autoSendLabel.textContent = "自动提交";
-                    // 保存设置到localStorage（使用NS综合.js的key保持兼容）
+                    // 保存设置到localStorage与GM存储
                     autoSendCheck.onchange = () => {
-                        localStorage.setItem("nodeseek_quick_reply_auto_submit", autoSendCheck.checked);
+                        const valStr = String(Boolean(autoSendCheck.checked));
+                        localStorage.setItem("nodeseek_quick_reply_auto_submit", valStr);
+                        try { GM_setValue("nodeseek_quick_reply_auto_submit", valStr); } catch { }
                     };
                     autoSendWrap.append(autoSendCheck, autoSendLabel);
 
@@ -4936,31 +4986,45 @@ html.dark-layout #mjj-cc-overlay {
                     if (menu.classList.contains("show")) requestAnimationFrame(placeMenu);
                 };
 
-                document.addEventListener("click", e => {
-                    // 当 layui 弹窗打开时（例如“新建分组”的确认/取消），不要自动关闭快捷回复面板
-                    // 处理两类情况：1) 点击发生在 layer 内部；2) layer 存在时点击落在外部但仍希望保持面板不被误关
-                    if (e.target?.closest?.(".layui-layer,.layui-layer-page,.layui-layer-dialog,.layui-layer-content,.layui-layer-btn,.layui-layer-shade,.layui-colorpicker,.layui-form-select")) return;
-                    if (menu.classList.contains("show") && document.querySelector(".layui-layer")) return;
-                    if (!wrap.contains(e.target)) menu.classList.remove("show");
-                });
+                if (!docClickBound) {
+                    docClickBound = true;
+                    document.addEventListener("click", e => {
+                        if (e.target?.closest?.(".layui-layer,.layui-layer-page,.layui-layer-dialog,.layui-layer-content,.layui-layer-btn,.layui-layer-shade,.layui-colorpicker,.layui-form-select")) return;
+                        if (document.querySelector(".nsx-quick-reply-menu.show") && document.querySelector(".layui-layer")) return;
+                        $$(".nsx-quick-reply-menu.show").forEach(m => {
+                            const w = m.closest(".nsx-quick-reply-wrap");
+                            if (!w || !w.contains(e.target)) m.classList.remove("show");
+                        });
+                    });
+                }
 
                 // 窗口变化时重新定位，避免面板被挤出屏幕
                 addEventListener("resize", placeMenu, { passive: true });
                 addEventListener("scroll", placeMenu, { passive: true });
 
-                sep.className = "sep";
                 wrap.append(btn, menu);
-                const lastEl = bar.lastElementChild;
-                if (lastEl?.classList?.contains("sep")) {
-                    bar.append(wrap);
+                const rightAnchor = bar.querySelector(".nsx-ai-sep, .nsx-ai-wrap, #nodeimage-toolbar-container") || bar.querySelector(".i-icon-full-screen-one, .i-icon-off-screen-one")?.parentElement || bar.querySelector(".toolbar-item.right");
+                if (rightAnchor) {
+                    const prev = rightAnchor.previousElementSibling;
+                    if (prev?.classList?.contains("sep")) {
+                        rightAnchor.before(wrap);
+                    } else {
+                        rightAnchor.before(sep, wrap);
+                    }
                 } else {
-                    bar.append(sep, wrap);
+                    const lastEl = bar.lastElementChild;
+                    if (lastEl?.classList?.contains("sep")) {
+                        bar.append(wrap);
+                    } else {
+                        bar.append(sep, wrap);
+                    }
                 }
             }
 
             function insertReplyText(text) {
                 if (!text) return;
-                const cm = editor.querySelector(".CodeMirror")?.CodeMirror;
+                const curEditor = $(".md-editor") || editor || document;
+                const cm = curEditor.querySelector(".CodeMirror")?.CodeMirror || document.querySelector(".md-editor .CodeMirror")?.CodeMirror;
                 if (cm) {
                     const doc = cm.getDoc();
                     const cur = doc.getCursor();
@@ -4968,7 +5032,7 @@ html.dark-layout #mjj-cc-overlay {
                     cm.focus();
                     return;
                 }
-                const ta = editor.querySelector("textarea");
+                const ta = curEditor.querySelector("textarea") || document.querySelector(".md-editor textarea");
                 if (!ta) return;
                 const start = ta.selectionStart ?? ta.value.length;
                 const end = ta.selectionEnd ?? ta.value.length;
@@ -4979,11 +5043,54 @@ html.dark-layout #mjj-cc-overlay {
                 ta.focus();
             }
 
-            function getQuickReplyGroups() {
+            function getDefaultQuickReplyPreset() {
+                return {
+                    "常用": [
+                        { title: "帮顶", content: "帮顶" },
+                        { title: "绑定，祝早出", content: "绑定，祝早出" },
+                        { title: "好鸡帮顶", content: "好鸡帮顶" },
+                        { title: "感谢分享", content: "感谢分享" },
+                        { title: "前排支持", content: "前排支持" }
+                    ]
+                };
+            }
+
+            function readQuickReplyRawObject() {
                 const raw = localStorage.getItem("nodeseek_quick_reply");
-                if (!raw) return [];
-                let parsed;
-                try { parsed = JSON.parse(raw); } catch { return []; }
+                let parsed = null;
+                if (raw != null) {
+                    try { parsed = JSON.parse(raw); } catch { parsed = null; }
+                }
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && Object.keys(parsed).length > 0) {
+                    try { GM_setValue("nodeseek_quick_reply", parsed); } catch { }
+                    return parsed;
+                }
+                let gmStored = null;
+                try { gmStored = GM_getValue("nodeseek_quick_reply", null); } catch { gmStored = null; }
+                if (typeof gmStored === "string") {
+                    try { gmStored = JSON.parse(gmStored); } catch { gmStored = null; }
+                }
+                if (gmStored && typeof gmStored === "object" && !Array.isArray(gmStored) && Object.keys(gmStored).length > 0) {
+                    localStorage.setItem("nodeseek_quick_reply", JSON.stringify(gmStored));
+                    return gmStored;
+                }
+                if (raw == null && gmStored == null) {
+                    const preset = getDefaultQuickReplyPreset();
+                    writeQuickReplyRawObject(preset);
+                    return preset;
+                }
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+                return {};
+            }
+
+            function writeQuickReplyRawObject(obj) {
+                const safeObj = obj && typeof obj === "object" && !Array.isArray(obj) ? obj : {};
+                localStorage.setItem("nodeseek_quick_reply", JSON.stringify(safeObj));
+                try { GM_setValue("nodeseek_quick_reply", safeObj); } catch { }
+            }
+
+            function getQuickReplyGroups() {
+                const parsed = readQuickReplyRawObject();
                 if (!parsed || typeof parsed !== "object") return [];
                 const groups = [];
                 Object.entries(parsed).forEach(([name, val]) => {
@@ -5102,16 +5209,13 @@ html.dark-layout #mjj-cc-overlay {
             }
 
             function ensureQuickReplyGroup(groupName) {
-                let parsed = {};
-                try { parsed = JSON.parse(localStorage.getItem("nodeseek_quick_reply") || "{}") || {}; } catch { parsed = {}; }
-                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) parsed = {};
+                const parsed = readQuickReplyRawObject();
                 if (!Object.prototype.hasOwnProperty.call(parsed, groupName)) parsed[groupName] = [];
-                localStorage.setItem("nodeseek_quick_reply", JSON.stringify(parsed));
+                writeQuickReplyRawObject(parsed);
             }
 
             function saveQuickReplyItem(groupName, item) {
-                let parsed = {};
-                try { parsed = JSON.parse(localStorage.getItem("nodeseek_quick_reply") || "{}") || {}; } catch { parsed = {}; }
+                const parsed = readQuickReplyRawObject();
                 if (!parsed[groupName]) parsed[groupName] = [];
                 if (Array.isArray(parsed[groupName])) {
                     parsed[groupName].push(item);
@@ -5122,7 +5226,7 @@ html.dark-layout #mjj-cc-overlay {
                 } else {
                     parsed[groupName] = [item];
                 }
-                localStorage.setItem("nodeseek_quick_reply", JSON.stringify(parsed));
+                writeQuickReplyRawObject(parsed);
             }
 
             function normalizeItems(src) {
@@ -5141,7 +5245,8 @@ html.dark-layout #mjj-cc-overlay {
                 const t = String(s).replace(/\s+/g, " ").trim();
                 return t.length > 28 ? `${t.slice(0, 28)}...` : t;
             }
-        }
+        },
+        watch: () => [{ sel: ".mde-toolbar", fn: () => window.__nsxRuntime?.ensureQuickReplyToolbar?.(), opts: { debounce: 80 } }]
     };
 
     const __vite_glob_0_14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5172,69 +5277,79 @@ html.dark-layout #mjj-cc-overlay {
         },
         match: ctx => location.pathname.startsWith("/new-discussion") && ctx.store.get("ai_comment.enabled", false),
         init(ctx) {
-            const editor = $(".md-editor");
-            const bar = editor?.querySelector(".mde-toolbar");
-            if (!bar) return;
-            if (bar.querySelector(".nsx-ai-wrap")) return;
-            const vAttr = [...(bar.querySelector(".toolbar-item")?.attributes || [])].find(a => a.name.startsWith("data-v-"))?.name;
-            const setV = el => vAttr && el.setAttribute(vAttr, "");
-
             addStyle("nsx-ai-reply", `
-    .nsx-ai-reply-btn{display:flex;align-items:center;gap:4px;color:#1677ff;cursor:pointer;font-size:12px;transition:all .2s}
+    .mde-toolbar .nsx-ai-wrap,.nsx-ai-wrap{display:inline-flex !important;align-items:center;width:auto !important;min-width:auto !important;padding:0 6px !important;flex-shrink:0 !important;white-space:nowrap !important}
+    .mde-toolbar .nsx-ai-reply-btn,.nsx-ai-reply-btn{width:auto !important;display:inline-flex !important;align-items:center;gap:4px;color:#1677ff;cursor:pointer;font-size:12px;transition:all .2s;white-space:nowrap !important;flex-shrink:0 !important}
     .nsx-ai-reply-btn:hover{color:#4096ff}
     .nsx-ai-reply-btn.loading{opacity:.6;cursor:not-allowed}
-    .nsx-ai-reply-btn svg{width:16px;height:16px}
+    .nsx-ai-reply-btn svg{width:16px;height:16px;flex-shrink:0}
     .nsx-ai-reply-icon{animation:aiSpin 1s linear infinite}
     @keyframes aiSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     .dark-layout .nsx-ai-reply-btn{color:#64b5f6}
     .dark-layout .nsx-ai-reply-btn:hover{color:#90caf9}
     `);
 
-            const sep = document.createElement("div");
-            sep.className = "sep nsx-ai-sep";
-            setV(sep);
+            const mountAiBtn = () => {
+                const editor = $(".md-editor");
+                const bar = editor?.querySelector(".mde-toolbar");
+                if (!bar || bar.querySelector(".nsx-ai-wrap")) return;
+                const vAttr = [...(bar.querySelector(".toolbar-item")?.attributes || [])].find(a => a.name.startsWith("data-v-"))?.name;
+                const setV = el => vAttr && el.setAttribute(vAttr, "");
 
-            const wrap = document.createElement("div");
-            wrap.className = "nsx-ai-wrap toolbar-item";
-            setV(wrap);
+                const sep = document.createElement("div");
+                sep.className = "sep nsx-ai-sep";
+                setV(sep);
 
-            const btn = document.createElement("span");
-            btn.className = "nsx-ai-reply-btn i-icon";
-            btn.title = "AI美化 - Nodeseek Pro";
-            btn.innerHTML = `<svg viewBox="0 0 48 48" fill="none"><path d="M24 4C13 4 4 13 4 24s9 20 20 20 20-9 20-20S35 4 24 4z" stroke="currentColor" stroke-width="4"/><path d="M24 14v10m0 4v6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>AI美化`;
-            setV(btn);
+                const wrap = document.createElement("div");
+                wrap.className = "nsx-ai-wrap toolbar-item";
+                setV(wrap);
 
-            wrap.append(btn);
-            // 插入到快捷回复按钮后面（分隔符 + 自动回复按钮）
-            const quickReplyWrap = bar.querySelector(".nsx-quick-reply-wrap");
-            if (quickReplyWrap) {
-                const next = quickReplyWrap.nextElementSibling;
-                if (next?.classList?.contains("sep")) {
-                    next.after(wrap);
+                const btn = document.createElement("span");
+                btn.className = "nsx-ai-reply-btn i-icon";
+                btn.title = "AI美化 - MJJ";
+                btn.innerHTML = `<svg viewBox="0 0 48 48" fill="none"><path d="M24 4C13 4 4 13 4 24s9 20 20 20 20-9 20-20S35 4 24 4z" stroke="currentColor" stroke-width="4"/><path d="M24 14v10m0 4v6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>AI美化`;
+                setV(btn);
+
+                wrap.append(btn);
+                const quickReplyWrap = bar.querySelector(".nsx-quick-reply-wrap");
+                const rightAnchor = bar.querySelector("#nodeimage-toolbar-container") || bar.querySelector(".i-icon-full-screen-one, .i-icon-off-screen-one")?.parentElement || bar.querySelector(".toolbar-item.right");
+                if (quickReplyWrap) {
+                    const next = quickReplyWrap.nextElementSibling;
+                    if (next?.classList?.contains("sep")) {
+                        next.after(wrap);
+                    } else {
+                        quickReplyWrap.after(sep, wrap);
+                    }
+                } else if (rightAnchor) {
+                    const prev = rightAnchor.previousElementSibling;
+                    if (prev?.classList?.contains("sep")) rightAnchor.before(wrap);
+                    else rightAnchor.before(sep, wrap);
                 } else {
-                    quickReplyWrap.after(sep, wrap);
-                }
-            } else {
-                const last = bar.lastElementChild;
-                if (last?.classList?.contains("sep")) bar.append(wrap);
-                else bar.append(sep, wrap);
-            }
-
-            btn.onclick = async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (btn.classList.contains("loading")) return;
-
-                // 打开配置面板
-                const apiKey = ctx.store.get("ai_comment.api_key") || "";
-                if (!apiKey) {
-                    openConfigPanel(ctx);
-                    return;
+                    const last = bar.lastElementChild;
+                    if (last?.classList?.contains("sep")) bar.append(wrap);
+                    else bar.append(sep, wrap);
                 }
 
-                await generateAIReply(ctx, editor, btn);
+                btn.onclick = async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (btn.classList.contains("loading")) return;
+
+                    const apiKey = ctx.store.get("ai_comment.api_key") || "";
+                    if (!apiKey) {
+                        openConfigPanel(ctx);
+                        return;
+                    }
+
+                    await generateAIReply(ctx, editor, btn);
+                };
             };
+
+            mountAiBtn();
+            document.addEventListener("click", e => {
+                if (e.target?.closest?.(".md-editor, .tab-option")) setTimeout(mountAiBtn, 60);
+            });
 
             function openConfigPanel(ctx) {
                 const escHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -6272,13 +6387,13 @@ html.dark-layout #mjj-cc-overlay {
                 };
 
                 addStyle("nsx-image-upload", `
-                #nodeimage-status { margin-left: 10px; display: inline-block; font-size: 13px; height: 28px; line-height: 28px; transition: all 0.3s ease; }
+                #nodeimage-status { margin-left: 6px; display: inline-flex; align-items: center; font-size: 12px; height: 28px; line-height: 28px; white-space: nowrap !important; flex-shrink: 0; transition: all 0.3s ease; }
                 #nodeimage-status.success { color: ${STATUS.SUCCESS.color}; }
                 #nodeimage-status.error { color: ${STATUS.ERROR.color}; }
                 #nodeimage-status.warning { color: ${STATUS.WARNING.color}; }
                 #nodeimage-status.info { color: ${STATUS.INFO.color}; }
-                .nodeimage-login-btn { cursor: pointer; margin-left: 10px; color: ${STATUS.WARNING.color}; font-size: 13px; background: rgba(230,162,60,0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(230,162,60,0.2); }
-                .nodeimage-toolbar-container { display: flex; align-items: center; margin-left: auto; margin-right: 10px; }
+                .nodeimage-login-btn { cursor: pointer; margin-left: 6px; color: ${STATUS.WARNING.color}; font-size: 12px; background: rgba(230,162,60,0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(230,162,60,0.2); white-space: nowrap !important; flex-shrink: 0; }
+                .nodeimage-toolbar-container { display: inline-flex; align-items: center; margin-left: auto; margin-right: 6px; flex-shrink: 0; white-space: nowrap !important; }
             `);
 
                 const Utils = {
@@ -6294,6 +6409,8 @@ html.dark-layout #mjj-cc-overlay {
                         const active = document.activeElement;
                         const fromActive = active?.closest?.('.CodeMirror')?.CodeMirror || (active?.classList?.contains('CodeMirror') ? active.CodeMirror : null);
                         if (fromActive) return fromActive;
+                        const currentDomCm = document.querySelector('.md-editor .CodeMirror')?.CodeMirror || document.querySelector('.CodeMirror')?.CodeMirror;
+                        if (currentDomCm) return currentDomCm;
                         return DOM.getEditor();
                     },
                     createFileInput: cb => { const i = Object.assign(document.createElement('input'), { type: 'file', multiple: true, accept: 'image/*' }); i.onchange = e => cb([...e.target.files]); i.click(); },
@@ -6358,7 +6475,7 @@ html.dark-layout #mjj-cc-overlay {
                         DOM.statusElements.forEach(el => {
                             if (isReady) {
                                 el.className = STATUS.SUCCESS.class;
-                                el.textContent = st?.summary ? `图床就绪 (${st.summary})` : MESSAGE.READY;
+                                el.textContent = st?.summary || MESSAGE.READY;
                             } else {
                                 el.textContent = '';
                             }
@@ -6366,7 +6483,31 @@ html.dark-layout #mjj-cc-overlay {
                     },
                     openLogin: () => { APP.storage.set('loginStatus', 'login_pending'); window.open(APP.site.url, '_blank'); },
                     setupToolbar: toolbar => {
-                        if (!toolbar || toolbar.querySelector(SELECTORS.container)) return;
+                        if (!toolbar) return;
+                        window.__nsxRuntime?.ensureQuickReplyToolbar?.();
+
+                        const imgBtn = toolbar.querySelector(SELECTORS.imgBtn);
+                        if (imgBtn && imgBtn.dataset.nsxImgBound !== '1') {
+                            imgBtn.dataset.nsxImgBound = '1';
+                            imgBtn.addEventListener('click', async e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                DOM.editor = document.activeElement?.closest?.('.CodeMirror') || document.querySelector('.md-editor .CodeMirror') || DOM.editor;
+                                if (!isUnifiedHostReady() && !(await Auth.checkLoginIfNeeded())) {
+                                    if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
+                                    else UI.openLogin();
+                                    return;
+                                }
+                                const targetCm = Utils.getActiveCodeMirror();
+                                Utils.createFileInput(files => ImageHandler.handleFiles(files, targetCm));
+                            }, true);
+                        }
+
+                        if (toolbar.querySelector(SELECTORS.container)) {
+                            UI.updateState();
+                            return;
+                        }
                         const container = document.createElement('div'); container.id = 'nodeimage-toolbar-container'; container.className = 'nodeimage-toolbar-container';
 
                         const fullScreenBtn = toolbar.querySelector('.i-icon-full-screen-one')?.parentElement || toolbar.querySelector('.i-icon-off-screen-one')?.parentElement || toolbar.querySelector('.toolbar-item.right');
@@ -6376,28 +6517,12 @@ html.dark-layout #mjj-cc-overlay {
                             toolbar.appendChild(container);
                         }
 
-                        const imgBtn = toolbar.querySelector(SELECTORS.imgBtn);
-                        if (imgBtn) {
-                            const newBtn = imgBtn.cloneNode(true);
-                            imgBtn.parentNode.replaceChild(newBtn, imgBtn);
-                            newBtn.addEventListener('click', async () => {
-                                DOM.editor = document.activeElement?.closest?.('.CodeMirror') || DOM.editor;
-                                if (!isUnifiedHostReady() && !(await Auth.checkLoginIfNeeded())) {
-                                    if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
-                                    else UI.openLogin();
-                                    return;
-                                }
-                                const targetCm = Utils.getActiveCodeMirror();
-                                Utils.createFileInput(files => ImageHandler.handleFiles(files, targetCm));
-                            });
-                        }
-
                         const statusEl = document.createElement('div'); statusEl.id = 'nodeimage-status'; statusEl.className = STATUS.INFO.class;
                         statusEl.style.cursor = 'pointer';
                         statusEl.title = '点击打开 MJJ 图床与上传设置';
                         statusEl.addEventListener('click', () => window.__nsxRuntime?.openControlCenter?.("image"));
                         container.appendChild(statusEl); DOM.statusElements.add(statusEl);
-                        const loginBtn = document.createElement('div'); loginBtn.className = 'nodeimage-login-btn'; loginBtn.textContent = '配置图床 / 登录 NodeImage';
+                        const loginBtn = document.createElement('div'); loginBtn.className = 'nodeimage-login-btn'; loginBtn.textContent = '配置图床'; loginBtn.title = '点击配置图床或登录 NodeImage';
                         loginBtn.addEventListener('click', () => {
                             if (window.__nsxRuntime?.openControlCenter) window.__nsxRuntime.openControlCenter("image");
                             else UI.openLogin();
@@ -6405,6 +6530,7 @@ html.dark-layout #mjj-cc-overlay {
                         loginBtn.style.display = 'none';
                         container.appendChild(loginBtn); DOM.loginButtons.add(loginBtn);
                         UI.updateState();
+                        window.__nsxRuntime?.ensureQuickReplyToolbar?.();
                     }
                 };
 
@@ -6448,17 +6574,27 @@ html.dark-layout #mjj-cc-overlay {
                                 ? await window.__nsxRuntime.uploadFileViaUnifiedImageHost(file)
                                 : await API.uploadImage(file);
                             ImageHandler.insertMarkdown(result.markdown, targetCm);
-                            await setStatus(STATUS.SUCCESS.class, result.providerLabel ? `${result.providerLabel} 上传成功！` : MESSAGE.UPLOAD_SUCCESS, APP.statusTimeout);
+                            window.__nsxRuntime?.ensureQuickReplyToolbar?.();
+                            await setStatus(STATUS.SUCCESS.class, MESSAGE.UPLOAD_SUCCESS, APP.statusTimeout);
                         } catch (error) {
                             if (error.message === MESSAGE.LOGIN_EXPIRED) await Auth.checkLoginIfNeeded(true);
                             console.error('[ImageHost]', error);
                             await setStatus(STATUS.ERROR.class, `上传失败: ${error.message}`, APP.statusTimeout);
                             ctx.ui.error?.(`图片上传失败: ${error.message}`);
+                        } finally {
+                            window.__nsxRuntime?.ensureQuickReplyToolbar?.();
                         }
                     },
                     insertMarkdown: (markdown, preferredCm = null) => {
-                        const cm = preferredCm || Utils.getActiveCodeMirror();
-                        if (cm) { const cursor = cm.getCursor(); cm.replaceRange(`\n${markdown}\n`, cursor); }
+                        const cm = (preferredCm?.getWrapperElement?.()?.isConnected ? preferredCm : null) || Utils.getActiveCodeMirror();
+                        if (cm) {
+                            const doc = cm.getDoc ? cm.getDoc() : cm;
+                            const cursor = doc.getCursor();
+                            const lineContent = doc.getLine ? (doc.getLine(cursor.line) || '') : '';
+                            const prefix = cursor.ch > 0 && lineContent.length > 0 ? '\n' : '';
+                            doc.replaceRange(`${prefix}${markdown}\n`, cursor);
+                            cm.focus?.();
+                        }
                     }
                 };
 
@@ -10156,7 +10292,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
         <div class="ns-ai-settings-note" style="margin:12px 0 0;">
           数据说明：仅使用 NodeSeek 公开账号资料，不调用 AI 或第三方服务；账号资料缓存 30 分钟。这些说明不再占用每张悬浮卡的显示空间。<br><br>
           请求保护：同一 UID 复用画像结果与账号缓存；并发请求自动合并；被动悬停请求单并发、至少间隔 1 秒且每分钟最多 8 个；403 / 429 后停止继续请求。<br><br>
-          若检测到 Nodeseek Pro 已接管该作者，本脚本不会自动重复访问相同账号接口，只显示兼容提示并保留一次明确的手动加载入口。
+          若检测到已有等级/资料标签接管该作者，本模块不会自动重复访问相同账号接口，只显示兼容提示并保留一次明确的手动加载入口。
         </div>
         <div class="ns-ai-analysis-actions"><button class="ns-ai-small-btn ns-ai-account-preview-clear" type="button">清除专用账号缓存</button></div>
       </div>`;
@@ -14551,7 +14687,7 @@ ${escapeDataForPrompt(payload)}
 
 
   // ============================================================
-  // 按需账号速览：默认关闭、缓存复用、Nodeseek Pro 兼容保护
+  // 按需账号速览：默认关闭、缓存复用、兼容保护
   // ============================================================
 
   const accountPreviewEl = document.createElement("div");
@@ -14583,7 +14719,7 @@ ${escapeDataForPrompt(payload)}
     return null;
   }
 
-  function inspectNodeseekProOwner(authorEl) {
+  function inspectExistingBadgeOwner(authorEl) {
     const scope = authorEl?.closest?.(".nsk-content-meta-info") || authorEl?.closest?.(".author-info") || authorEl?.parentElement;
     const display = scope?.querySelector?.(".nsx-user-info-display") || null;
     const claimed = authorEl?.dataset?.nsxInfoLoaded === "1";
@@ -14675,15 +14811,15 @@ ${escapeDataForPrompt(payload)}
       ${social.length?`<div class="ns-ai-account-preview-social">${social.map(([label,value])=>`<span>${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>`).join("")}</div>`:""}`, button);
   }
 
-  function renderNodeseekProCompatibility(authorEl, uid, button, generation) {
-    const pro = inspectNodeseekProOwner(authorEl);
+  function renderExistingBadgeCompatibility(authorEl, uid, button, generation) {
+    const pro = inspectExistingBadgeOwner(authorEl);
     const name = safeString(authorEl?.textContent, `UID ${uid}`, 80) || `UID ${uid}`;
     const badge = safeString(pro.display?.textContent, "", 80).replace(/\s+/g, " ").trim();
     showAccountPreviewHtml(`
       <div class="ns-ai-account-preview-head"><div class="ns-ai-account-preview-name">${escapeHtml(name)}</div>${badge?`<div class="ns-ai-account-preview-level">${escapeHtml(badge)}</div>`:""}</div>
       <div class="ns-ai-account-preview-meta">UID ${escapeHtml(String(uid))}</div>
-      <div class="ns-ai-account-preview-note compat">检测到 Nodeseek Pro 已接管或正在读取该作者资料。为避免重复访问相同接口，本脚本没有自动请求。${pro.display?"可悬停其等级标签查看现有详情。":"若它未显示资料，可能仍在排队、功能已关闭或请求失败。"}</div>
-      <button class="ns-ai-account-preview-action" type="button">仍由本脚本加载一次</button>`, button);
+      <div class="ns-ai-account-preview-note compat">检测到已有等级标签接管或正在读取该作者资料。为避免重复访问相同接口，本模块没有自动请求。${pro.display?"可悬停其等级标签查看现有详情。":"若它未显示资料，可能仍在排队、功能已关闭或请求失败。"}</div>
+      <button class="ns-ai-account-preview-action" type="button">仍加载一次</button>`, button);
     accountPreviewEl.querySelector(".ns-ai-account-preview-action")?.addEventListener("click",e=>{
       e.preventDefault(); e.stopPropagation();
       if(generation!==accountPreviewGeneration)return;
@@ -14696,7 +14832,7 @@ ${escapeDataForPrompt(payload)}
     showAccountPreviewHtml(`
       <div class="ns-ai-account-preview-head"><div class="ns-ai-account-preview-name">${escapeHtml(name)}</div></div>
       <div class="ns-ai-account-preview-meta">UID ${escapeHtml(String(uid))}</div>
-      <div class="ns-ai-account-preview-note compat">${escapeHtml(error?.message || "账号资料暂时无法读取。")} 本脚本不会自动重试，避免产生重复请求。</div>`,button);
+      <div class="ns-ai-account-preview-note compat">${escapeHtml(error?.message || "账号资料暂时无法读取。")} 本模块不会自动重试，避免产生重复请求。</div>`,button);
   }
 
   async function startAccountPreview(authorEl, uid, button, { overridePro = false } = {}) {
@@ -14709,9 +14845,9 @@ ${escapeDataForPrompt(payload)}
       renderFullAccountPreview(reusable,button,authorEl?.textContent || "");
       return;
     }
-    const pro = inspectNodeseekProOwner(authorEl);
+    const pro = inspectExistingBadgeOwner(authorEl);
     if (pro.detected && !overridePro) {
-      renderNodeseekProCompatibility(authorEl,uid,button,generation);
+      renderExistingBadgeCompatibility(authorEl,uid,button,generation);
       return;
     }
     showAccountPreviewHtml(`
