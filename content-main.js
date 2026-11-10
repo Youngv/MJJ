@@ -1,4 +1,4 @@
-// MJJ - Extension Main Content Script (v1.4.3)
+// MJJ - Extension Main Content Script (v1.4.4)
 (async function() {
   const gm = window.__NSX_GM__;
   if (gm && gm.ready) {

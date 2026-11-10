@@ -1,4 +1,4 @@
-// MJJ - Unified Popup Controller (v1.4.3)
+// MJJ - Unified Popup Controller (v1.4.4)
 document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("menu-container");
   const verBadge = document.getElementById("ver-badge");
