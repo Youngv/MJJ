@@ -4,6 +4,8 @@ const activeRequests = new Map();
 
 function ensureSessionOriginRule() {
   try {
+    const extId = chrome.runtime?.id;
+    if (!extId) return;
     chrome.declarativeNetRequest?.updateSessionRules?.({
       removeRuleIds: [1001],
       addRules: [
@@ -16,7 +18,13 @@ function ensureSessionOriginRule() {
           },
           condition: {
             tabIds: [-1],
-            excludedRequestDomains: ["nodeimage.com"],
+            initiatorDomains: [extId],
+            excludedRequestDomains: [
+              "nodeseek.com",
+              "nodeseek.org",
+              "deepflood.com",
+              "nodeimage.com"
+            ],
             resourceTypes: ["xmlhttprequest"]
           }
         }

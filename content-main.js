@@ -3095,6 +3095,12 @@ html.dark-layout #mjj-cc-overlay {
             const reSign = () => {
                 if (!ctx.loggedIn || store.get(`sign_in.${code}.enabled`, true) === false) return ctx.ui.alert("提示", "签到已关闭或当前未登录");
                 store.set(`sign_in.${code}.last_date`, "1753/1/1");
+                store.set(`sign_in.${code}.ok_date`, "1753/1/1");
+                try {
+                    Object.keys(sessionStorage).forEach(k => {
+                        if (k.startsWith(`__nsx_signin_cooldown_${code}_`)) sessionStorage.removeItem(k);
+                    });
+                } catch {}
                 location.reload();
             };
 
@@ -5535,36 +5541,53 @@ html.dark-layout #mjj-cc-overlay {
         order: 80,
         cfg: {
             sign_in: {
-                ns: { enabled: true, method: 1, last_date: "", ignore_date: "" },
-                df: { enabled: true, method: 1, last_date: "", ignore_date: "" }
+                ns: { enabled: true, method: 1, last_date: "", ok_date: "", ignore_date: "" },
+                df: { enabled: true, method: 1, last_date: "", ok_date: "", ignore_date: "" }
             }
         },
         meta: {
             sign_in: {
                 label: "自动签到", group: "🚀 基础功能",
                 fields: { method: { type: "RADIO", label: "签到方式", valueType: "number", options: [{ value: 1, text: "随机🍗" }, { value: 2, text: "5个🍗" }] } },
-                hidden: ["last_date", "ignore_date"]
+                hidden: ["last_date", "ok_date", "ignore_date"]
             }
         },
         match: ctx => ctx.site && ctx.loggedIn && ctx.store.get(`sign_in.${ctx.site.code}.enabled`, true),
         async init(ctx) {
             const code = ctx.site.code;
-            const method = ctx.store.get(`sign_in.${code}.method`, 0);
+            const method = Number(ctx.store.get(`sign_in.${code}.method`, 1)) || 1;
             const now = (() => {
                 const off = new Date().getTimezoneOffset() + 480;
                 const bj = new Date(Date.now() + off * 60000);
                 return `${bj.getFullYear()}/${bj.getMonth() + 1}/${bj.getDate()}`;
             })();
-            if (ctx.store.get(`sign_in.${code}.last_date`) === now) return;
+            if (ctx.store.get(`sign_in.${code}.last_date`) === now && ctx.store.get(`sign_in.${code}.ok_date`) === now) return;
+            const retryKey = `__nsx_signin_cooldown_${code}_${now}`;
+            try {
+                if (Number(sessionStorage.getItem(retryKey) || 0) > Date.now()) return;
+            } catch {}
             try {
                 const r = await net.post(`/api/attendance?random=${method === 1}`);
-                ctx.store.set(`sign_in.${code}.last_date`, now);
+                const msg = String(r?.message || "");
+                const alreadySigned = /(?:已完成签到|已签到|重复操作|already)/i.test(msg);
                 if (r?.success) {
+                    ctx.store.set(`sign_in.${code}.last_date`, now);
+                    ctx.store.set(`sign_in.${code}.ok_date`, now);
+                    try { sessionStorage.removeItem(retryKey); } catch {}
                     ctx.ui.success?.(`签到成功！+${r.gain}🍗，共${r.current}🍗`);
+                } else if (alreadySigned) {
+                    ctx.store.set(`sign_in.${code}.last_date`, now);
+                    ctx.store.set(`sign_in.${code}.ok_date`, now);
+                    try { sessionStorage.removeItem(retryKey); } catch {}
+                    ctx.ui.info?.(msg || "今天已完成签到");
                 } else {
-                    ctx.ui.info?.(r?.message || "签到失败");
+                    try { sessionStorage.setItem(retryKey, String(Date.now() + 120000)); } catch {}
+                    ctx.ui.info?.(msg || "签到失败");
                 }
-            } catch (e) { ctx.ui.info?.(e?.message || "签到错误"); }
+            } catch (e) {
+                try { sessionStorage.setItem(retryKey, String(Date.now() + 120000)); } catch {}
+                ctx.ui.info?.(e?.message || "签到错误");
+            }
         }
     };
 
@@ -5593,7 +5616,7 @@ html.dark-layout #mjj-cc-overlay {
             addStyle("nsx-signtip", CSS);
             const code = ctx.site.code;
             const now = (() => { const d = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 6e4); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; })();
-            if (now === ctx.store.get(`sign_in.${code}.ignore_date`) || now === ctx.store.get(`sign_in.${code}.last_date`)) return;
+            if (now === ctx.store.get(`sign_in.${code}.ignore_date`) || (now === ctx.store.get(`sign_in.${code}.last_date`) && now === ctx.store.get(`sign_in.${code}.ok_date`))) return;
 
             const header = $("header");
             if (!header) return;
@@ -5606,10 +5629,22 @@ html.dark-layout #mjj-cc-overlay {
                 e.preventDefault();
                 try {
                     const r = await net.post(`/api/attendance?random=${a.dataset.r === "1"}`);
-                    r?.success ? ctx.ui.success?.(`签到成功！+${r.gain}🍗`) : ctx.ui.info?.(r?.message || "签到失败");
+                    const msg = String(r?.message || "");
+                    const alreadySigned = /(?:已完成签到|已签到|重复操作|already)/i.test(msg);
+                    if (r?.success) {
+                        ctx.ui.success?.(`签到成功！+${r.gain}🍗`);
+                        tip.remove();
+                        ctx.store.set(`sign_in.${code}.last_date`, now);
+                        ctx.store.set(`sign_in.${code}.ok_date`, now);
+                    } else if (alreadySigned) {
+                        ctx.ui.info?.(msg || "今天已完成签到");
+                        tip.remove();
+                        ctx.store.set(`sign_in.${code}.last_date`, now);
+                        ctx.store.set(`sign_in.${code}.ok_date`, now);
+                    } else {
+                        ctx.ui.info?.(msg || "签到失败");
+                    }
                 } catch (e) { ctx.ui.warning?.(e?.message || "失败"); }
-                tip.remove();
-                ctx.store.set(`sign_in.${code}.last_date`, now);
             });
             $(".nsx-ign", tip).onclick = e => { e.preventDefault(); tip.remove(); ctx.store.set(`sign_in.${code}.ignore_date`, now); };
         }
