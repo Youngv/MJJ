@@ -3,7 +3,7 @@
 > 📌 **脚本来源致谢（整合自以下开源脚本）**：
 > - **Nodeseek Pro**: <https://greasyfork.org/zh-CN/scripts/567109-nodeseek-pro>
 > - **nodeseek-ai-profile**: <https://github.com/yellow13441/nodeseek-ai-profile>
-> - **ns-df-chat-backup**: <https://github.com/likesrt/ns-df-chat-backup/raw/refs/heads/main/ns-df-chat-backup.user.js>
+> - **ns-df-chat-backup**: <https://github.com/likesrt/ns-df-chat-backup>
 
 集成以下四大核心能力与全新重构的 **MJJ 控制中心**（同时支持 **Chrome / Edge Manifest V3 浏览器插件** 与 **Tampermonkey 油猴脚本**）：
 

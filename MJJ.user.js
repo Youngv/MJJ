@@ -42,12 +42,6 @@
 // @downloadURL  https://github.com/Youngv/MJJ/raw/main/MJJ.user.js
 // @updateURL    https://github.com/Youngv/MJJ/raw/main/MJJ.user.js
 // ==/UserScript==
-/*
- * 📌 脚本来源（整合自以下开源脚本）：
- * - https://greasyfork.org/zh-CN/scripts/567109-nodeseek-pro
- * - https://github.com/yellow13441/nodeseek-ai-profile
- * - https://github.com/likesrt/ns-df-chat-backup/raw/refs/heads/main/ns-df-chat-backup.user.js
- */
 (function () {
     'use strict';
 
@@ -3419,33 +3413,6 @@ html.dark-layout #mjj-cc-overlay {
 
                 // 1. Overview Pane
                 const overviewPane = addNavTab("overview", "🏠 套件总览");
-
-                // Pinned Script Sources Card
-                const sourcesSuite = el("div", "mjj-suite-card", overviewPane);
-                sourcesSuite.style.marginBottom = "12px";
-                const sourcesTop = el("div", "mjj-suite-top", sourcesSuite);
-                const sourcesTitle = el("div", "mjj-suite-title", sourcesTop);
-                sourcesTitle.innerHTML = `<span>📌 脚本来源</span><span class="mjj-cc-badge">置顶</span>`;
-                const sourcesList = el("div", "mjj-suite-desc", sourcesSuite);
-                sourcesList.style.display = "flex";
-                sourcesList.style.flexDirection = "column";
-                sourcesList.style.gap = "6px";
-                sourcesList.style.marginTop = "4px";
-                [
-                    "https://greasyfork.org/zh-CN/scripts/567109-nodeseek-pro",
-                    "https://github.com/yellow13441/nodeseek-ai-profile",
-                    "https://github.com/likesrt/ns-df-chat-backup/raw/refs/heads/main/ns-df-chat-backup.user.js"
-                ].forEach(url => {
-                    const a = el("a", "", sourcesList);
-                    a.href = url;
-                    a.target = "_blank";
-                    a.rel = "noopener noreferrer";
-                    a.textContent = url;
-                    a.style.cssText = "color:#059669;text-decoration:none;word-break:break-all;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;";
-                    a.addEventListener("mouseenter", () => { a.style.textDecoration = "underline"; });
-                    a.addEventListener("mouseleave", () => { a.style.textDecoration = "none"; });
-                });
-
                 const stats = collectLiveStats();
                 const statsGrid = el("div", "mjj-stats-grid", overviewPane);
 
