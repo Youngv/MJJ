@@ -1,4 +1,28 @@
-// MJJ v1.4.6 - MAIN World Core Script
+// MJJ - Extension Main Content Script (v1.4.6)
+(async function() {
+  const gm = window.__NSX_GM__;
+  if (gm && gm.ready) {
+    try { await gm.ready; } catch {}
+  }
+  const {
+    GM_info = { script: { name: "MJJ", version: "1.4.6", namespace: "http://www.nodeseek.com/" } },
+    GM_getValue = (_k, d) => d,
+    GM_setValue = () => {},
+    GM_deleteValue = () => {},
+    GM_listValues = () => [],
+    GM_addValueChangeListener = () => 0,
+    GM_removeValueChangeListener = () => {},
+    GM_registerMenuCommand = () => "",
+    GM_unregisterMenuCommand = () => {},
+    GM_getResourceURL = () => "",
+    GM_addStyle = () => null,
+    GM_addElement = () => null,
+    GM_openInTab = () => {},
+    GM_setClipboard = () => {},
+    GM_notification = () => {},
+    GM_xmlhttpRequest = () => ({ abort() {} }),
+    unsafeWindow = window
+  } = gm || window;
 
 (function () {
     'use strict';
@@ -18459,4 +18483,5 @@ ${escapeDataForPrompt(payload)}
      * - trustScore = max(0, min(100, trustScore))
      * ========================================================================
      */
+})();
 })();
