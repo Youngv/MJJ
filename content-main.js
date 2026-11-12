@@ -1,11 +1,11 @@
-// MJJ - Extension Main Content Script (v1.4.6)
+// MJJ - Extension Main Content Script (v1.4.7)
 (async function() {
   const gm = window.__NSX_GM__;
   if (gm && gm.ready) {
     try { await gm.ready; } catch {}
   }
   const {
-    GM_info = { script: { name: "MJJ", version: "1.4.6", namespace: "http://www.nodeseek.com/" } },
+    GM_info = { script: { name: "MJJ", version: "1.4.7", namespace: "http://www.nodeseek.com/" } },
     GM_getValue = (_k, d) => d,
     GM_setValue = () => {},
     GM_deleteValue = () => {},

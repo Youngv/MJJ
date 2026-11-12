@@ -231,11 +231,11 @@
   const GM_info = {
     script: {
       name: "MJJ",
-      version: "1.4.6",
+      version: "1.4.7",
       namespace: "http://www.nodeseek.com/"
     },
     scriptHandler: "MJJExtension",
-    version: "1.4.6"
+    version: "1.4.7"
   };
 
   function GM_getValue(key, defaultValue) {

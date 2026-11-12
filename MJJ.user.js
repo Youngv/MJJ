@@ -2,7 +2,7 @@
 // @name         MJJ
 // @description  用于增强 NodeSeek/DeepFlood 论坛体验的用户脚本：提供自动签到、下拉加载、快速评论、内容过滤、低等级发帖模糊屏蔽、用户 AI 画像与交易分析、私信本地缓存与 WebDAV/R2 备份、多图床上传、浏览历史、Callout 渲染、图片预览、快捷键等功能，并带可视化设置面板可自由开关配置。
 // @namespace    http://www.nodeseek.com/
-// @version      1.4.6
+// @version      1.4.7
 // @match        *://www.nodeseek.com/*
 // @match        *://www.deepflood.com/*
 // @require      https://s4.zstatic.net/ajax/libs/layui/2.10.3/layui.min.js

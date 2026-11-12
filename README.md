@@ -7,7 +7,7 @@
 
 集成以下四大核心能力与全新重构的 **MJJ 控制中心**（同时支持 **Chrome / Edge Manifest V3 浏览器插件** 与 **Tampermonkey 油猴脚本**）：
 
-1. **🎛️ 全新重构「MJJ 控制中心」(v1.4.6)**：
+1. **🎛️ 全新重构「MJJ 控制中心」(v1.4.7)**：
    - **三处快捷唤起**：论坛顶部导航栏右侧 `⚙️` 图标、快捷键 `Alt + M`、浏览器插件 Popup 面板 / 油猴菜单。
    - **修改即生效（Auto-Save）**：告别繁琐的手动保存按钮，所有开关、分段单选、下拉框、数值、配色修改后自动保存并实时热更新生效。
    - **全局实时搜索**：顶部内置搜索框，输入关键词即可跨分类秒级定位任意功能模块与子设置项。
@@ -20,7 +20,7 @@
 
 ## 📦 方式一：安装 Chrome / Edge 浏览器插件（推荐桌面端）
 
-1. 在 [Releases](https://github.com/Youngv/MJJ/releases) 页面下载最新的 **`MJJ-extension-v1.4.6.zip`** 并解压到本地文件夹。
+1. 在 [Releases](https://github.com/Youngv/MJJ/releases) 页面下载最新的 **`MJJ-extension-v1.4.7.zip`** 并解压到本地文件夹。
 2. 打开 Chrome 或 Edge 浏览器，访问 `chrome://extensions/`（或 `edge://extensions/`）。
 3. 开启右上角的 **「开发者模式 (Developer mode)」**。
 4. 点击左上角 **「加载已解压的扩展程序 (Load unpacked)」**，选择刚才解压出来的文件夹即可生效。

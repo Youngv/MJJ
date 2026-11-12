@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MJJ",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "NodeSeek / DeepFlood 全能增强插件：集成自动签到、快捷回复、低等级发帖模糊屏蔽、用户 AI 画像与深度交易分析、多图床上传、私信本地缓存与 WebDAV/R2 备份。",
   "icons": {
     "16": "icons/icon16.png",
