@@ -2232,6 +2232,10 @@ html.dark-layout #mjj-cc-overlay {
     width: 96px;
     text-align: right;
 }
+.mjj-secret-masked {
+    -webkit-text-security: disc;
+    text-security: disc;
+}
 .mjj-textarea {
     width: 100%;
     min-height: 76px;
@@ -3302,6 +3306,30 @@ html.dark-layout #mjj-cc-overlay {
                 const subEl = el("div", "mjj-cc-subtitle", titleWrap);
                 subEl.textContent = "NodeSeek & DeepFlood 全能增强 · AI 画像 · 私信备份";
 
+                const preventAutofill = (inp, fieldName) => {
+                    if (fieldName) inp.name = fieldName;
+                    inp.autocomplete = "off";
+                    inp.autocapitalize = "off";
+                    inp.spellcheck = false;
+                    inp.setAttribute("data-lpignore", "true");
+                    inp.setAttribute("data-1p-ignore", "true");
+                    inp.setAttribute("data-bwignore", "true");
+                    inp.setAttribute("data-form-type", "other");
+                    return inp;
+                };
+                const guardSearchInput = (inp, fieldName) => {
+                    preventAutofill(inp, fieldName);
+                    inp.readOnly = true;
+                    const unlock = () => { inp.readOnly = false; };
+                    inp.addEventListener("pointerdown", unlock);
+                    inp.addEventListener("focus", unlock);
+                    inp.addEventListener("keydown", unlock);
+                    inp.addEventListener("blur", () => {
+                        if (!inp.value) inp.readOnly = true;
+                    });
+                    return inp;
+                };
+
                 const headerRight = el("div", "mjj-cc-header-right", header);
                 const searchWrap = el("div", "mjj-cc-search-wrap", headerRight);
                 const searchIcon = el("span", "mjj-cc-search-icon", searchWrap);
@@ -3309,6 +3337,7 @@ html.dark-layout #mjj-cc-overlay {
                 const searchInput = el("input", "mjj-cc-search-input", searchWrap);
                 searchInput.type = "search";
                 searchInput.placeholder = "搜索功能、模块或设置项...";
+                guardSearchInput(searchInput, "mjj_cc_filter_query");
 
                 const savePill = el("span", "mjj-cc-save-pill", headerRight);
                 savePill.textContent = "⚡ 自动保存已就绪";
@@ -3593,6 +3622,7 @@ html.dark-layout #mjj-cc-overlay {
                 chatSearchInp.placeholder = "搜索联系人昵称、UID、备注或私信内容...";
                 chatSearchInp.style.flex = "1";
                 chatSearchInp.style.minWidth = "200px";
+                guardSearchInput(chatSearchInp, "mjj_chat_filter_query");
 
                 const latestWrap = el("div", "mjj-field-ctrl", chatToolbar);
                 const latestLbl = el("span", "mjj-field-label", latestWrap);
@@ -3779,19 +3809,19 @@ html.dark-layout #mjj-cc-overlay {
                     }
                     const grp = el("div", "mjj-input-group", item);
                     const inp = el("input", "mjj-input", grp);
-                    inp.type = opts.type || "text";
+                    const isSecret = opts.type === "password";
+                    inp.type = isSecret ? "text" : (opts.type || "text");
                     inp.placeholder = placeholder || "";
                     inp.value = initVal || "";
-                    inp.autocomplete = "off";
-                    inp.spellcheck = false;
-                    if (opts.type === "password") {
+                    preventAutofill(inp);
+                    if (isSecret) {
+                        inp.classList.add("mjj-secret-masked");
                         const toggleBtn = el("button", "mjj-input-addon", grp);
                         toggleBtn.type = "button";
                         toggleBtn.textContent = "显示";
                         toggleBtn.addEventListener("click", () => {
-                            const isPwd = inp.type === "password";
-                            inp.type = isPwd ? "text" : "password";
-                            toggleBtn.textContent = isPwd ? "隐藏" : "显示";
+                            const masked = inp.classList.toggle("mjj-secret-masked");
+                            toggleBtn.textContent = masked ? "显示" : "隐藏";
                         });
                     }
                     return inp;
@@ -5391,7 +5421,7 @@ html.dark-layout #mjj-cc-overlay {
                         <div class="layui-form-item">
                             <label class="layui-form-label">API密钥</label>
                             <div class="layui-input-block">
-                                <input type="password" id="nsx-ai-key" class="layui-input" value="${escHtml(apiKey)}" placeholder="sk-...">
+                                <input type="text" id="nsx-ai-key" class="layui-input" value="${escHtml(apiKey)}" placeholder="sk-..." autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" style="-webkit-text-security:disc;">
                                 <div class="nsx-ai-tip">您的API密钥将仅保存在本地浏览器中</div>
                             </div>
                         </div>
@@ -8896,6 +8926,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     .ns-ai-settings-select:focus, .ns-ai-settings-input:focus {
       border-color:#8a70b3; box-shadow:0 0 0 2px rgba(114,85,181,.11);
     }
+    .ns-ai-secret-masked { -webkit-text-security:disc; text-security:disc; }
     .ns-ai-settings-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:3px 0 12px; }
     .ns-ai-settings-tab {
       border:1px solid #ddd7e7; background:#faf9fc; color:#675879; cursor:pointer;
@@ -9938,7 +9969,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
         </div>
         <div class="ns-ai-settings-field">
           <div class="ns-ai-settings-field-label"><span>API Key</span><span class="ns-ai-settings-help">各供应商独立保存</span></div>
-          <div class="ns-ai-key-row"><input class="ns-ai-settings-input ns-ai-field-key" type="password" autocomplete="off" spellcheck="false"><button class="ns-ai-small-btn ns-ai-key-toggle" type="button">显示</button></div>
+          <div class="ns-ai-key-row"><input class="ns-ai-settings-input ns-ai-field-key ns-ai-secret-masked" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button class="ns-ai-small-btn ns-ai-key-toggle" type="button">显示</button></div>
         </div>
         <div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>API URL</span><span class="ns-ai-settings-help">可填 /v1 Base URL 或完整 Chat Completions 地址</span></div><input class="ns-ai-settings-input ns-ai-field-url" type="url" spellcheck="false"></div>
         <div class="ns-ai-settings-field">
@@ -10005,7 +10036,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
         settingsDraft.providers[id].timeoutSeconds[mode] = Number(el.value);
       });
     }
-    settingsPaneEl.querySelector(".ns-ai-key-toggle").addEventListener("click", (e) => { const showing = key.type === "text"; key.type = showing ? "password" : "text"; e.currentTarget.textContent = showing ? "显示" : "隐藏"; });
+    settingsPaneEl.querySelector(".ns-ai-key-toggle").addEventListener("click", (e) => { const masked = key.classList.toggle("ns-ai-secret-masked"); e.currentTarget.textContent = masked ? "显示" : "隐藏"; });
     settingsPaneEl.querySelector(".ns-ai-test-provider").addEventListener("click", () => testSettingsProvider(id));
     settingsPaneEl.querySelector(".ns-ai-reset-provider").addEventListener("click", () => {
       const keepKey = settingsDraft.providers[id].apiKey;
@@ -10251,7 +10282,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
       <div class="ns-ai-settings-current"><div class="ns-ai-settings-label">${settingsDraft.imageHosting.selectionMode==="rotation"?"默认 / 兜底图床":"默认图床"}</div><select class="ns-ai-settings-select ns-ai-image-provider">${Object.entries(IMAGE_HOST_DEFS).map(([id,item])=>`<option value="${id}" ${id===providerId?"selected":""}>${item.label}</option>`).join("")}</select></div>
       <div class="ns-ai-settings-card">
         <div class="ns-ai-settings-card-head"><div class="ns-ai-settings-provider-name">${def.label}</div><a class="ns-ai-small-btn" href="${def.applyUrl}" target="_blank" rel="noopener noreferrer">申请 / 使用说明</a></div>
-        <div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>${def.credentialLabel}</span><span class="ns-ai-settings-help">${def.credentialHelp}</span></div><div class="ns-ai-share-token-row"><input class="ns-ai-settings-input ns-ai-image-credential" type="password" autocomplete="off"><button class="ns-ai-small-btn ns-ai-image-credential-toggle" type="button">显示</button>${providerId==="sixteen"?'<button class="ns-ai-small-btn ns-ai-image-token-random" type="button">随机生成</button>':""}</div></div>
+        <div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>${def.credentialLabel}</span><span class="ns-ai-settings-help">${def.credentialHelp}</span></div><div class="ns-ai-share-token-row"><input class="ns-ai-settings-input ns-ai-image-credential ns-ai-secret-masked" type="text" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"><button class="ns-ai-small-btn ns-ai-image-credential-toggle" type="button">显示</button>${providerId==="sixteen"?'<button class="ns-ai-small-btn ns-ai-image-token-random" type="button">随机生成</button>':""}</div></div>
         ${providerId==="imgbb"?`<div class="ns-ai-settings-field"><div class="ns-ai-settings-field-label"><span>自动过期（秒）</span><span class="ns-ai-settings-help">0 表示不过期；可填 60–15552000</span></div><input class="ns-ai-settings-input ns-ai-imgbb-expiration" type="number" min="0" max="15552000" value="${cfg.expirationSeconds||0}"></div>`:""}
         <div class="ns-ai-settings-note">${deletionNote} 凭据保存在本地存储；上传时只发送给所选图床。</div>
         <div class="ns-ai-image-test-box">
@@ -10264,7 +10295,7 @@ sections 最多 6 个，每栏 items 最多 6 条。不要为了填满格式制�
     paneEl.querySelector(".ns-ai-image-selection-mode").addEventListener("change",e=>{settingsDraft.imageHosting.selectionMode=e.currentTarget.value;renderImagePane(paneEl,statusSetter);statusSetter();});
     paneEl.querySelector(".ns-ai-image-provider").addEventListener("change",e=>{settingsDraft.imageHosting.activeProvider=e.currentTarget.value;renderImagePane(paneEl,statusSetter);statusSetter();});
     input.addEventListener("input",()=>{settingsDraft.imageHosting.providers[providerId][def.credentialKey]=input.value;paneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);statusSetter();});
-    paneEl.querySelector(".ns-ai-image-credential-toggle").addEventListener("click",e=>{const show=input.type==="text";input.type=show?"password":"text";e.currentTarget.textContent=show?"显示":"隐藏";});
+    paneEl.querySelector(".ns-ai-image-credential-toggle").addEventListener("click",e=>{const masked=input.classList.toggle("ns-ai-secret-masked");e.currentTarget.textContent=masked?"显示":"隐藏";});
     paneEl.querySelector(".ns-ai-image-token-random")?.addEventListener("click",()=>{if(input.value&&readUploadHistory().some(item=>(item.providerId||"sixteen")==="sixteen")&&!confirm("当前已有 16 图床上传历史。更换 Auth-Token 后，旧图片可能需要原 Token 才能删除。仍要生成新 Token 吗？"))return;const token=generateRandomAuthToken();input.value=token;settingsDraft.imageHosting.providers.sixteen.authToken=token;paneEl.querySelector(".ns-ai-image-rotation-summary").textContent=imageHostSelectionSummary(settingsDraft);statusSetter("✓ 已生成随机 Auth-Token。保存后生效。","success");});
     paneEl.querySelector(".ns-ai-imgbb-expiration")?.addEventListener("input",e=>{settingsDraft.imageHosting.providers.imgbb.expirationSeconds=Number(e.currentTarget.value);statusSetter();});
     paneEl.querySelector(".ns-ai-image-test").addEventListener("click",e=>runImageHostConnectivityTest(providerId,e.currentTarget,paneEl.querySelector(".ns-ai-image-test-status")));
@@ -16848,11 +16879,11 @@ ${escapeDataForPrompt(payload)}
             </div>
             <div class="nodeseek-form-group">
               <label>用户名</label>
-              <input type="text" id="webdav-username" value="${webdav.username || ''}" placeholder="用户名">
+              <input type="text" id="webdav-username" value="${webdav.username || ''}" placeholder="用户名" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
             </div>
             <div class="nodeseek-form-group">
               <label>密码</label>
-              <input type="password" id="webdav-password" value="${webdav.password || ''}" placeholder="密码">
+              <input type="text" id="webdav-password" value="${webdav.password || ''}" placeholder="密码" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" style="-webkit-text-security:disc;">
             </div>
             <div class="nodeseek-form-group">
               <label>备份路径</label>
@@ -16876,7 +16907,7 @@ ${escapeDataForPrompt(payload)}
             </div>
             <div class="nodeseek-form-group">
               <label>授权 Token（必填）</label>
-              <input type="password" id="r2-token" value="${r2cfg.authToken || ''}" placeholder="与 Worker 端 AUTH_TOKEN 一致">
+              <input type="text" id="r2-token" value="${r2cfg.authToken || ''}" placeholder="与 Worker 端 AUTH_TOKEN 一致" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" style="-webkit-text-security:disc;">
             </div>
             <div class="nodeseek-form-group">
               <label>基础路径</label>
